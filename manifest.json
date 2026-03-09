@@ -5,7 +5,18 @@
   "description": "Remove tracking parameters from the current tab URL and copy the clean link to your clipboard.",
 
   "action": {
-    "default_title": "Clean Link \u2013 copy without trackers"
+    "default_title": "Clean Link \u2013 copy without trackers",
+    "default_icon": {
+      "16": "icons/link (1).png",
+      "24": "icons/link (1).png",
+      "32": "icons/link (1).png"
+    }
+  },
+  "icons": {
+    "16": "icons/link (1).png",
+    "32": "icons/link (1).png",
+    "48": "icons/link (1).png",
+    "128": "icons/link (1).png"
   },
 
   "background": {
