@@ -329,6 +329,29 @@ test('youtu.be short links: removes si= while preserving the path (video ID)', (
   );
 });
 
+// -- Site rule: Google Search ------------------------------------------------
+
+test('Google Search: strips known tracking/session params but preserves q=', () => {
+  eq(
+    clean('https://www.google.com/search?q=wayback+short+movie&client=ms-android-samsung-ss&sca_esv=23fc8e95f4db8408&sxsrf=AHTn8zqfvuvcvp5NBgSPe3fOnXv-CJ3Ddg%3A1743796736779&ei=ADrwZ9-XL8CokdUPpuPjiAI&oq=wayback+short+movie&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIhN3YXliYWNrIHNob3J0IG1vdmllMgQQIxgn&sclient=mobile-gws-wiz-serp#ebo=0'),
+    'https://www.google.com/search?q=wayback+short+movie',
+  );
+});
+
+test('Google Search: preserves content-defining search controls', () => {
+  eq(
+    clean('https://www.google.com/search?q=clean+link&tbm=vid&tbs=qdr:w&start=20&hl=en&gl=us&num=20&sourceid=chrome'),
+    'https://www.google.com/search?q=clean+link&tbm=vid&tbs=qdr%3Aw&start=20&hl=en&gl=us&num=20',
+  );
+});
+
+test('Google non-search pages are not affected by Google Search rule', () => {
+  eq(
+    clean('https://www.google.com/maps?client=foo&q=coffee'),
+    'https://www.google.com/maps?client=foo&q=coffee',
+  );
+});
+
 // -- Site rule: Amazon -------------------------------------------------------
 
 test('Amazon: removes affiliate tag= and ref= but preserves ASIN in path', () => {
@@ -349,6 +372,29 @@ test('Amazon: removes qid (query session ID) and sr (rank position)', () => {
   eq(
     clean('https://www.amazon.com/s?k=laptop&qid=123456&sr=8-1'),
     'https://www.amazon.com/s?k=laptop',
+  );
+});
+
+// -- Site rule: AliExpress ---------------------------------------------------
+
+test('AliExpress: strips all tracking params, preserving item ID in path', () => {
+  eq(
+    clean('https://fr.aliexpress.com/item/1005009851200333.html?spm=a2g0o.detail.0.0&pvid=129e8773-dbbb&_t=gps-id:pcDetail,scm-url:1007.40050'),
+    'https://fr.aliexpress.com/item/1005009851200333.html',
+  );
+});
+
+test('AliExpress: removes all known tracking params including utparam-url', () => {
+  eq(
+    clean('https://www.aliexpress.com/item/123.html?spm=x&gps-id=y&scm=z&scm_id=z&scm-url=z&pvid=a&_t=b&tpp_buckets=c&pdp_ext_f=d&pdp_npi=e&utparam-url=f'),
+    'https://www.aliexpress.com/item/123.html',
+  );
+});
+
+test('AliExpress: rule applies to all regional subdomains', () => {
+  eq(
+    clean('https://de.aliexpress.com/item/999.html?spm=tracking&pvid=session'),
+    'https://de.aliexpress.com/item/999.html',
   );
 });
 

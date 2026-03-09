@@ -9,7 +9,12 @@
  *   - When uncertain whether a parameter is tracking or content-defining, preserve it.
  *   - Exact-match rules and prefix-match rules are kept separate for clarity.
  *   - Site-specific rules live in SITE_RULES, not in the generic lists.
+ *
+ * Wrapped in an IIFE so that injecting this file more than once into the same
+ * page (e.g. on rapid double-click) never causes a "const already declared" error.
  */
+
+(function () {
 
 // ---------------------------------------------------------------------------
 // Exact-match tracking parameters (compared case-insensitively).
@@ -108,6 +113,72 @@ const SITE_RULES = [
   },
 
   {
+    // AliExpress product pages: the item ID lives entirely in the URL path
+    // (/item/XXXXXXXXXX.html), so every query parameter is decorative.
+    // spm, scm*, pvid, gps-id, _t, tpp_buckets, pdp_* and utparam-url are
+    // all session/placement/A-B-test noise with no content-defining purpose.
+    test: (url) => /(?:^|\.)aliexpress\.com$/.test(url.hostname),
+    clean: (url) => {
+      const aliexpressTrackingParams = [
+        'spm',          // session/placement tracking path
+        'gps-id',       // placement ID
+        'scm',          // scene tracking token
+        'scm_id',       // scene ID
+        'scm-url',      // scene URL token
+        'pvid',         // page view ID
+        '_t',           // tracking blob
+        'tpp_buckets',  // A/B test bucket IDs
+        'pdp_ext_f',    // page-detail extra fields (fromPage, sceneId, …)
+        'pdp_npi',      // pricing display data redundant with page content
+        'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
+      ];
+      for (const key of aliexpressTrackingParams) {
+        url.searchParams.delete(key);
+      }
+      return url;
+    },
+  },
+
+  {
+    // Google Search results pages: keep content-defining params (q, tbm, tbs,
+    // hl, gl, num, start, etc.) and strip session/telemetry noise.
+    // Scope is intentionally narrow (Google host + /search path) so other
+    // Google products are untouched unless we add explicit rules later.
+    test: (url) => /(?:^|\.)google\.[a-z.]+$/.test(url.hostname)
+                && url.pathname === '/search',
+    clean: (url) => {
+      const googleSearchTrackingParams = [
+        'client',   // requesting client/app fingerprint
+        'sxsrf',    // session/XSRF token
+        'ei',       // request/session event identifier
+        'gs_lp',    // query refinement/session blob
+        'sca_esv',  // experiment/session variant token
+        'oq',       // original query (typing/correction telemetry)
+        'sclient',  // search client surface identifier
+        'sourceid', // traffic source marker (e.g. "chrome")
+        'ved',      // click/context telemetry token
+        'uact',     // user action type
+        'iflsig',   // integrity/session signature
+      ];
+      for (const key of googleSearchTrackingParams) {
+        url.searchParams.delete(key);
+      }
+
+      // Google occasionally appends query-like hash params such as #ebo=0.
+      // Strip only ebo from the fragment while preserving any other hash keys.
+      if (url.hash.startsWith('#') && url.hash.length > 1) {
+        const hashParams = new URLSearchParams(url.hash.slice(1));
+        if (hashParams.has('ebo')) {
+          hashParams.delete('ebo');
+          const nextHash = hashParams.toString();
+          url.hash = nextHash ? `#${nextHash}` : '';
+        }
+      }
+      return url;
+    },
+  },
+
+  {
     // YouTube: preserve v= (video), t= (timestamp), list= (playlist), index=.
     // Strip si= (share instance ID) and feature= (traffic source label).
     test: (url) => url.hostname === 'www.youtube.com'
@@ -151,9 +222,7 @@ function removeTrackingParams(url) {
 
   for (const key of url.searchParams.keys()) {
     const lower = key.toLowerCase();
-    const isExact  = EXACT_PARAMS.has(lower);
-    const isPrefix = PREFIX_PARAMS.some((p) => lower.startsWith(p));
-    if (isExact || isPrefix) {
+    if (EXACT_PARAMS.has(lower) || lower.startsWith('utm_')) {
       keysToDelete.push(key);
     }
   }
@@ -170,7 +239,7 @@ function removeTrackingParams(url) {
 function applySiteRules(url) {
   for (const rule of SITE_RULES) {
     if (rule.test(url)) {
-      url = rule.clean(url) ?? url;
+      url = rule.clean(url);
     }
   }
   return url;
@@ -217,7 +286,18 @@ function cleanUrl(rawUrl) {
   return { ok: true, cleaned, changed: cleaned !== rawUrl };
 }
 
-// Allow importing in Node without breaking the browser global.
+// ---------------------------------------------------------------------------
+// Exports
+// ---------------------------------------------------------------------------
+
 if (typeof module !== 'undefined') {
+  // CommonJS – used by clean-url.test.js running in Node.
   module.exports = { cleanUrl, EXACT_PARAMS, PREFIX_PARAMS };
+} else {
+  // Browser content-script context: expose cleanUrl for content.js, which is
+  // injected in the same executeScript call and therefore shares globalThis.
+  // The underscore prefix signals this is extension-internal, not page API.
+  globalThis._cleanLink = { cleanUrl };
 }
+
+}()); // end IIFE

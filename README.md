@@ -2,7 +2,7 @@
 
 A minimal Chrome extension that removes tracking parameters from the current tab's URL and copies the clean link to your clipboard.
 
-Click the toolbar icon → clean URL is on your clipboard. That's it.
+Click the toolbar icon → clean URL is on your clipboard and a brief toast confirms it. No popup opens.
 
 ---
 
@@ -12,9 +12,9 @@ When you click the toolbar icon, Clean Link:
 
 1. Reads the URL of the current active tab.
 2. Strips known tracking and analytics query parameters.
-3. Applies a small set of site-specific rules (Amazon, YouTube).
+3. Applies a small set of site-specific rules (Amazon, AliExpress, YouTube, Google Search).
 4. Copies the result to your clipboard.
-5. Shows whether tracking was removed, or the URL was already clean.
+5. Shows a brief toast in the corner of the page: green if tracking was removed or the link was already clean, red on error. The toast dismisses itself after 2.5 seconds.
 
 ---
 
@@ -45,7 +45,17 @@ When you click the toolbar icon, Clean Link:
 - Before: `https://www.google.com/search?q=privacy+tools&utm_source=homepage`
 - After: `https://www.google.com/search?q=privacy+tools`
 
-**Already clean URL:** copied as-is, and the popup says so.
+**Google Search URL with session/telemetry noise:**
+
+- Before: `https://www.google.com/search?q=wayback+short+movie&client=ms-android-samsung-ss&sxsrf=...&ei=...&oq=wayback+short+movie&sclient=mobile-gws-wiz-serp#ebo=0`
+- After: `https://www.google.com/search?q=wayback+short+movie`
+
+**AliExpress product URL with placement/session params:**
+
+- Before: `https://fr.aliexpress.com/item/1005009851200333.html?spm=...&pvid=...&_t=...`
+- After: `https://fr.aliexpress.com/item/1005009851200333.html`
+
+**Already clean URL:** copied as-is, and the toast says so.
 
 ---
 
@@ -75,6 +85,8 @@ The `utm_` prefix rule catches any current or future `utm_*` variant without req
 | ------- | ---------------------------------------------------------------------- | ------------------------------ |
 | YouTube | `si`, `feature`, `app`, `src_vid`, `pp`                                | `v`, `t`, `list`, `index`, ... |
 | Amazon  | `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`  | `th`, `k`, `i`, ...            |
+| AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url` | path item ID, content params |
+| Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
 
 ---
 
@@ -121,15 +133,17 @@ If you want more aggressive cleaning for a specific site, add a targeted rule to
 - **No third-party scripts** – zero external dependencies.
 - **No `eval` or dynamic code** – the CSP is declared explicitly in `manifest.json`.
 
-You can audit every line: five small files, no build step, no minification, no network access.
+You can audit every line: a handful of small files, no build step, no minification, no network access.
 
 ---
 
 ## Permissions
 
-**`activeTab`** – reads the URL of the tab you are currently viewing. Access is granted only while the popup is open; there is no persistent background access to your tabs or browsing history.
+**`activeTab`** – allows the extension to inject scripts into the tab you are currently viewing, but only when you explicitly click the icon. There is no persistent access to your tabs or browsing history.
 
-**`clipboardWrite`** – writes the cleaned URL to your clipboard.
+**`scripting`** – required to call `chrome.scripting.executeScript`, which injects `clean-url.js` and `content.js` into the active tab. Without this, the extension cannot interact with the page at all.
+
+**`clipboardWrite`** – grants `navigator.clipboard.writeText()` access to the injected content script. Used as the primary clipboard path; `document.execCommand('copy')` serves as a fallback if the modern API is unavailable.
 
 No host permissions (`<all_urls>` or `*://*/*`) are requested.
 
@@ -148,9 +162,9 @@ This is MV3's default, written out so you don't have to look it up.
 ```text
 CleanLink/
 ├── manifest.json        # MV3 manifest – permissions and CSP
-├── popup.html           # Popup UI and styles
-├── popup.js             # Tab query, clipboard write, UI state
+├── background.js        # Service worker – handles icon click, injects scripts
 ├── clean-url.js         # Pure URL-cleaning logic (no browser APIs)
+├── content.js           # Injected into page – cleans URL, writes clipboard, shows toast
 ├── clean-url.test.js    # Test suite – run with node clean-url.test.js
 └── README.md
 ```
@@ -185,8 +199,9 @@ Exit code is `0` on full pass, `1` on any failure.
 
 ## Current limitations
 
-- **`chrome://`, `file://`, `about:`, `data:` pages are not cleaned.** These schemes don't carry meaningful tracking parameters. The extension shows a readable error instead of silently doing nothing.
-- **Fragment-only tracking** (e.g. `#xtor=RSS-...`) is not removed. Hash fragments are not sent to servers, so this is low priority, but it is a known gap.
+- **`chrome://`, `about:`, and other restricted pages are silently skipped.** Chrome does not allow script injection into these pages, so the extension does nothing when clicked on them.
+- **`file://` pages are not cleaned.** By default, script injection is blocked. If a user manually enables "Allow access to file URLs", the cleaner still rejects `file://` as an unsupported scheme.
+- **Fragment-only tracking** is mostly not removed. `#ebo=0` is stripped on Google Search, but other hash trackers (e.g. `#xtor=RSS-...`) are currently preserved.
 - **URL shorteners** (bit.ly, t.co, etc.) are not expanded. Following a redirect requires a network request, which violates the no-network-requests guarantee.
 - **Redirect wrappers** (e.g. `https://l.facebook.com/l.php?u=...`) are not unwrapped for the same reason.
 
