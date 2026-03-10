@@ -382,6 +382,13 @@ test('Amazon: removes _encoding and content-id merchandising noise', () => {
   );
 });
 
+test('Amazon: removes path ref segment plus ie and ats personalization params', () => {
+  eq(
+    clean('https://www.amazon.ca/gp/buyagain/ref=pd_hp_d_atf_rp_1?ie=UTF8&ats=eyJleHBsaWNpdENhbmRpZGF0ZXMiOiJCMDlCWFNRUDZXIiwiY3VzdG9tZXJJZCI6IkFFN0ZaUDZJNFFMS1UifQ%3D%3D&pd_rd_w=XTg0o&content-id=amzn1.sym.ace16cc7-9ebe-41a0-b471-1454746eb0b6&pf_rd_p=ace16cc7-9ebe-41a0-b471-1454746eb0b6&pf_rd_r=BJZ5D08KXGHPYESX9AJ9&pd_rd_wg=uJGDb&pd_rd_r=178ac574-8459-4009-9fd3-795f7d3eb033'),
+    'https://www.amazon.ca/gp/buyagain',
+  );
+});
+
 // -- Site rule: AliExpress ---------------------------------------------------
 
 test('AliExpress: strips all tracking params, preserving item ID in path', () => {

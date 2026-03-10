@@ -1,27 +1,12 @@
-/**
- * content.js
- *
- * Injected by background.js when the user clicks the extension icon.
- * Runs in Chrome's isolated content-script world (separate from the page's
- * own JavaScript, but with access to the page DOM for the toast element).
- *
- * Depends on clean-url.js being injected first in the same executeScript
- * call, which exposes { cleanUrl } via globalThis._cleanLink.
- *
- * No network requests. No storage. No telemetry.
- */
-
 (async function () {
 
   // Guard against rapid double-clicks: skip if already running.
-  // Auto-clears after 3 s so a subsequent click always works.
+  // Auto-clears after 1s so a subsequent click always works.
   if (globalThis._cleanLinkActive) return;
   globalThis._cleanLinkActive = true;
-  setTimeout(() => { delete globalThis._cleanLinkActive; }, 3000);
+  setTimeout(() => { delete globalThis._cleanLinkActive; }, 1000);
 
-  // ---------------------------------------------------------------------------
   // 1. Clean the URL
-  // ---------------------------------------------------------------------------
 
   const result = globalThis._cleanLink.cleanUrl(location.href);
 
@@ -29,10 +14,8 @@
     showToast(result.error, true);
     return;
   }
-
-  // ---------------------------------------------------------------------------
+  
   // 2. Write to clipboard
-  // ---------------------------------------------------------------------------
 
   try {
     await copyText(result.cleaned);
@@ -41,9 +24,7 @@
     return;
   }
 
-  // ---------------------------------------------------------------------------
   // 3. Show feedback
-  // ---------------------------------------------------------------------------
 
   showToast(
     result.changed
@@ -52,9 +33,7 @@
     false,
   );
 
-  // ---------------------------------------------------------------------------
   // Helpers
-  // ---------------------------------------------------------------------------
 
   /**
    * Write `text` to the clipboard.

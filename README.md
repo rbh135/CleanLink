@@ -84,7 +84,7 @@ The `utm_` prefix rule catches any current or future `utm_*` variant without req
 | Site    | Params removed                                                         | Params kept                    |
 | ------- | ---------------------------------------------------------------------- | ------------------------------ |
 | YouTube | `si`, `feature`, `app`, `src_vid`, `pp`                                | `v`, `t`, `list`, `index`, ... |
-| Amazon  | `_encoding`, `content-id`, `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`  | `th`, `k`, `i`, ...            |
+| Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`  | `th`, `k`, `i`, ...            |
 | AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url` | path item ID, content params |
 | Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
 

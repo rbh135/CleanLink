@@ -92,9 +92,13 @@ const SITE_RULES = [
     // the content identifier; none of the params below affect which page loads.
     test: (url) => /\bamazon\.(com|co\.uk|de|fr|ca|jp|com\.au|com\.br|in|it|es|nl|se|sg|ae|com\.mx)$/.test(url.hostname),
     clean: (url) => {
+      url.pathname = url.pathname.replace(/\/ref=[^/?#]+$/, '');
+
       const amazonSessionParams = [
+        'ats', // opaque personalization blob; can include customer/account hints
         '_encoding', // legacy page encoding marker, not content-defining
         'content-id', // merchandising/placement token from recommendation slots
+        'ie', // legacy input-encoding marker
         'tag',       // affiliate / associate tag
         'linkCode',  // affiliate link code
         'linkId',    // affiliate link ID
