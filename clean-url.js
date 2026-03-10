@@ -93,6 +93,8 @@ const SITE_RULES = [
     test: (url) => /\bamazon\.(com|co\.uk|de|fr|ca|jp|com\.au|com\.br|in|it|es|nl|se|sg|ae|com\.mx)$/.test(url.hostname),
     clean: (url) => {
       const amazonSessionParams = [
+        '_encoding', // legacy page encoding marker, not content-defining
+        'content-id', // merchandising/placement token from recommendation slots
         'tag',       // affiliate / associate tag
         'linkCode',  // affiliate link code
         'linkId',    // affiliate link ID

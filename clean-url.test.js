@@ -375,6 +375,13 @@ test('Amazon: removes qid (query session ID) and sr (rank position)', () => {
   );
 });
 
+test('Amazon: removes _encoding and content-id merchandising noise', () => {
+  eq(
+    clean('https://www.amazon.ca/Giantex-Thickened-Tabletop-Cross-Shaped-Capacity/dp/B0GGHYFVVJ/?_encoding=UTF8&content-id=amzn1.sym.b72a7db1-2e40-43b1-9a87-c772f9c9cf18%3Aamzn1.symc.5a16118f-86f0-44cd-8e3e-6c5f82df43d0'),
+    'https://www.amazon.ca/Giantex-Thickened-Tabletop-Cross-Shaped-Capacity/dp/B0GGHYFVVJ/',
+  );
+});
+
 // -- Site rule: AliExpress ---------------------------------------------------
 
 test('AliExpress: strips all tracking params, preserving item ID in path', () => {
