@@ -329,6 +329,15 @@ test('youtu.be short links: removes si= while preserving the path (video ID)', (
   );
 });
 
+// -- Site rule: Redbubble ---------------------------------------------------
+
+test('Redbubble: removes share attribution params but preserves page and sort', () => {
+  eq(
+    clean('https://www.redbubble.com/people/Assassimation/explore?page=1&ref=artist_profile_share&ref_site=share&sortOrder=recent'),
+    'https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent',
+  );
+});
+
 // -- Site rule: Google Search ------------------------------------------------
 
 test('Google Search: strips known tracking/session params but preserves q=', () => {

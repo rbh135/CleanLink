@@ -5,8 +5,7 @@
  * the active tab in a single call so they share the same isolated-world
  * globalThis. All URL cleaning, clipboard writing, and toast display happen
  * inside those injected scripts; nothing sensitive passes through this worker.
- *
- * No network requests. No storage. No telemetry.
+ * 
  */
 
 chrome.action.onClicked.addListener(async (tab) => {

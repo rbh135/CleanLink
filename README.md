@@ -55,6 +55,11 @@ When you click the toolbar icon, Clean Link:
 - Before: `https://fr.aliexpress.com/item/1005009851200333.html?spm=...&pvid=...&_t=...`
 - After: `https://fr.aliexpress.com/item/1005009851200333.html`
 
+**Redbubble artist page with share attribution:**
+
+- Before: `https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent&ref=artist_profile_share&ref_site=share`
+- After: `https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent`
+
 **Already clean URL:** copied as-is, and the toast says so.
 
 ---
@@ -86,6 +91,7 @@ The `utm_` prefix rule catches any current or future `utm_*` variant without req
 | YouTube | `si`, `feature`, `app`, `src_vid`, `pp`                                | `v`, `t`, `list`, `index`, ... |
 | Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`  | `th`, `k`, `i`, ...            |
 | AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url` | path item ID, content params |
+| Redbubble | `ref`, `ref_site`                                                    | `page`, `sortOrder`, ...       |
 | Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
 
 ---

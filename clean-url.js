@@ -16,9 +16,6 @@
 
 (function () {
 
-// ---------------------------------------------------------------------------
-// Exact-match tracking parameters (compared case-insensitively).
-//
 // A parameter belongs here only if:
 //   (a) it has a single, documented, unambiguous tracking purpose, AND
 //   (b) it is never used to identify page content.
@@ -63,7 +60,6 @@ const EXACT_PARAMS = new Set([
   'oly_enc_id',
 ]);
 
-// ---------------------------------------------------------------------------
 // Prefix-match rules (case-insensitive).
 //
 // Any parameter whose name starts with one of these prefixes is removed.
@@ -75,7 +71,6 @@ const PREFIX_PARAMS = [
   'utm_',
 ];
 
-// ---------------------------------------------------------------------------
 // Site-specific cleanup rules.
 //
 // Apply targeted removals for well-known domains after generic cleaning.
@@ -139,6 +134,22 @@ const SITE_RULES = [
         'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
       ];
       for (const key of aliexpressTrackingParams) {
+        url.searchParams.delete(key);
+      }
+      return url;
+    },
+  },
+
+  {
+    // Redbubble artist/shop pages use ref/ref_site for share attribution.
+    // Preserve pagination/sort controls and drop only the share-tracking keys.
+    test: (url) => /(?:^|\.)redbubble\.com$/.test(url.hostname),
+    clean: (url) => {
+      const redbubbleTrackingParams = [
+        'ref',
+        'ref_site',
+      ];
+      for (const key of redbubbleTrackingParams) {
         url.searchParams.delete(key);
       }
       return url;
