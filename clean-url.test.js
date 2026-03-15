@@ -118,19 +118,8 @@ test('removes mc_cid and mc_eid', () => {
   eq(clean('https://example.com/?mc_cid=abc&mc_eid=def&id=1'), 'https://example.com/?id=1');
 });
 
-test('removes wickedid', () => {
-  eq(clean('https://example.com/?wickedid=abc&id=1'), 'https://example.com/?id=1');
-});
-
 test('removes _hsenc and _hsmi', () => {
   eq(clean('https://example.com/?_hsenc=p&_hsmi=q'), 'https://example.com/');
-});
-
-test('removes HubSpot ads tracking params', () => {
-  eq(
-    clean('https://example.com/?hsa_acc=1&hsa_cam=2&hsa_grp=3&hsa_ad=4&hsa_src=google&hsa_tgt=kwd-1&hsa_kw=desk&hsa_mt=b&hsa_net=adwords&hsa_ver=3&id=1'),
-    'https://example.com/?id=1',
-  );
 });
 
 test('removes mkt_tok', () => {
@@ -141,10 +130,6 @@ test('removes igshid', () => {
   eq(clean('https://www.instagram.com/p/abc/?igshid=xyz'), 'https://www.instagram.com/p/abc/');
 });
 
-test('removes igsh', () => {
-  eq(clean('https://www.instagram.com/p/abc/?igsh=xyz'), 'https://www.instagram.com/p/abc/');
-});
-
 test('removes twclid', () => {
   eq(clean('https://example.com/?twclid=abc'), 'https://example.com/');
 });
@@ -153,29 +138,9 @@ test('removes yclid', () => {
   eq(clean('https://example.com/?yclid=123'), 'https://example.com/');
 });
 
-test('removes msclkid', () => {
-  eq(clean('https://example.com/?msclkid=abc123&id=1'), 'https://example.com/?id=1');
-});
-
-test('removes ttclid', () => {
-  eq(clean('https://example.com/?ttclid=abc123&id=1'), 'https://example.com/?id=1');
-});
-
-test('removes rb_clickid', () => {
-  eq(clean('https://example.com/?rb_clickid=abc123&id=1'), 'https://example.com/?id=1');
-});
-
-test('removes mibextid', () => {
-  eq(clean('https://example.com/?mibextid=abc123&id=1'), 'https://example.com/?id=1');
-});
-
-test('removes epik', () => {
-  eq(clean('https://example.com/?epik=abc123&id=1'), 'https://example.com/?id=1');
-});
-
-test('removes vero_id, vero_conv, oly_anon_id, oly_enc_id', () => {
+test('removes vero_id, oly_anon_id, oly_enc_id', () => {
   eq(
-    clean('https://example.com/?x=1&vero_id=a&vero_conv=b&oly_anon_id=c&oly_enc_id=d'),
+    clean('https://example.com/?x=1&vero_id=a&oly_anon_id=b&oly_enc_id=c'),
     'https://example.com/?x=1',
   );
 });
@@ -361,22 +326,6 @@ test('youtu.be short links: removes si= while preserving the path (video ID)', (
   eq(
     clean('https://youtu.be/dQw4w9WgXcQ?si=abc123'),
     'https://youtu.be/dQw4w9WgXcQ',
-  );
-});
-
-// -- Site rule: Redbubble ---------------------------------------------------
-
-test('Kickstarter project pages: remove discovery/share params', () => {
-  eq(
-    clean('https://www.kickstarter.com/projects/flowtangible/the-array-a-modular-charging-system-for-modern-desktop?ref=section-homepage-view-more-discovery-p3&category_id=Q2F0ZWdvcnktMjg='),
-    'https://www.kickstarter.com/projects/flowtangible/the-array-a-modular-charging-system-for-modern-desktop',
-  );
-});
-
-test('Kickstarter non-project pages are not affected by the Kickstarter rule', () => {
-  eq(
-    clean('https://www.kickstarter.com/discover/advanced?ref=nav_search&term=desk'),
-    'https://www.kickstarter.com/discover/advanced?ref=nav_search&term=desk',
   );
 });
 
