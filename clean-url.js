@@ -35,16 +35,28 @@ const EXACT_PARAMS = new Set([
   // Mailchimp campaign tracking
   'mc_cid',  // Mailchimp campaign ID
   'mc_eid',  // Mailchimp email ID (recipient)
+  'wickedid', // newsletter/email attribution token
 
   // HubSpot email tracking
   '_hsenc',  // HubSpot encoded email address
   '_hsmi',   // HubSpot email message ID
+  'hsa_acc', // HubSpot account ID
+  'hsa_cam', // HubSpot campaign ID
+  'hsa_grp', // HubSpot ad group ID
+  'hsa_ad',  // HubSpot ad ID
+  'hsa_src', // HubSpot traffic source
+  'hsa_tgt', // HubSpot targeting descriptor
+  'hsa_kw',  // HubSpot keyword
+  'hsa_mt',  // HubSpot match type
+  'hsa_net', // HubSpot ad network
+  'hsa_ver', // HubSpot tracking schema version
 
   // Marketo email tracking
   'mkt_tok', // Marketo tracking token
 
   // Instagram share tracking
   'igshid',  // Instagram Share ID
+  'igsh',    // Instagram share token variant
 
   // Twitter / X click tracking
   'twclid',  // Twitter Click ID
@@ -52,8 +64,24 @@ const EXACT_PARAMS = new Set([
   // Yandex click tracking
   'yclid',   // Yandex Click ID
 
+  // Microsoft Ads click tracking
+  'msclkid',
+
+  // TikTok Ads click tracking
+  'ttclid',
+
+  // Reddit Ads click tracking
+  'rb_clickid',
+
+  // Meta share attribution
+  'mibextid',
+
+  // Pinterest/Ezoic-style click tracking
+  'epik',
+
   // Vero campaign tracking
   'vero_id',
+  'vero_conv',
 
   // Omnisend subscriber tracking
   'oly_anon_id',
@@ -134,6 +162,24 @@ const SITE_RULES = [
         'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
       ];
       for (const key of aliexpressTrackingParams) {
+        url.searchParams.delete(key);
+      }
+      return url;
+    },
+  },
+
+  {
+    // Kickstarter project pages identify the content entirely in the path
+    // (/projects/{creator}/{project-slug}). Share/discovery params like ref
+    // and category_id do not change which project page loads.
+    test: (url) => /(?:^|\.)kickstarter\.com$/.test(url.hostname)
+                && /^\/projects\/[^/]+\/[^/]+\/?$/.test(url.pathname),
+    clean: (url) => {
+      const kickstarterTrackingParams = [
+        'ref',
+        'category_id',
+      ];
+      for (const key of kickstarterTrackingParams) {
         url.searchParams.delete(key);
       }
       return url;
