@@ -380,6 +380,22 @@ test('Kickstarter non-project pages are not affected by the Kickstarter rule', (
   );
 });
 
+// -- Site rule: Humble Bundle ------------------------------------------------
+
+test('Humble Bundle: removes hmb_* attribution params from bundle links', () => {
+  eq(
+    clean('https://www.humblebundle.com/games/checkmate-chess-games-collection?hmb_source=&hmb_medium=product_tile&hmb_campaign=mosaic_section_1_layout_index_2_layout_type_threes_tile_index_1_c_checkmatechessgamescollection_bundle'),
+    'https://www.humblebundle.com/games/checkmate-chess-games-collection',
+  );
+});
+
+test('Humble Bundle: preserves non-hmb params', () => {
+  eq(
+    clean('https://www.humblebundle.com/games/checkmate-chess-games-collection?gift=true&hmb_source=homepage'),
+    'https://www.humblebundle.com/games/checkmate-chess-games-collection?gift=true',
+  );
+});
+
 // -- Site rule: Redbubble ---------------------------------------------------
 
 test('Redbubble: removes share attribution params but preserves page and sort', () => {

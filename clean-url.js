@@ -187,6 +187,20 @@ const SITE_RULES = [
   },
 
   {
+    // Humble Bundle uses hmb_* query params for source/placement/campaign
+    // attribution. Bundle/product identity is carried by the path.
+    test: (url) => /(?:^|\.)humblebundle\.com$/.test(url.hostname),
+    clean: (url) => {
+      for (const key of [...url.searchParams.keys()]) {
+        if (key.toLowerCase().startsWith('hmb_')) {
+          url.searchParams.delete(key);
+        }
+      }
+      return url;
+    },
+  },
+
+  {
     // Redbubble artist/shop pages use ref/ref_site for share attribution.
     // Preserve pagination/sort controls and drop only the share-tracking keys.
     test: (url) => /(?:^|\.)redbubble\.com$/.test(url.hostname),
