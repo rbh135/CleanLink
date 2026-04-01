@@ -428,6 +428,20 @@ test('Google non-search pages are not affected by Google Search rule', () => {
   );
 });
 
+test('Google Maps: removes entry and g_ep from place URLs', () => {
+  eq(
+    clean('https://www.google.com/maps/place/Mar+Youhana+Cave/@34.2718612,35.6597375,15z/data=!4m8!3m7!1s0x1521e203d8b48eef:0xf453d2160d36970c!8m2!3d34.2720974!4d35.6598183!9m1!1b1!16s%2Fg%2F11c45lq25y?entry=ttu&g_ep=EgoyMDI2MDMyOS4wIKXMDSoASAFQAw%3D%3D'),
+    'https://www.google.com/maps/place/Mar+Youhana+Cave/@34.2718612,35.6597375,15z/data=!4m8!3m7!1s0x1521e203d8b48eef:0xf453d2160d36970c!8m2!3d34.2720974!4d35.6598183!9m1!1b1!16s%2Fg%2F11c45lq25y',
+  );
+});
+
+test('Google Maps: preserves unrelated query params', () => {
+  eq(
+    clean('https://www.google.com/maps?client=foo&q=coffee&entry=ttu&g_ep=abc'),
+    'https://www.google.com/maps?client=foo&q=coffee',
+  );
+});
+
 // -- Site rule: Amazon -------------------------------------------------------
 
 test('Amazon: removes affiliate tag= and ref= but preserves ASIN in path', () => {

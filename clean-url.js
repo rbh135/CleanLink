@@ -217,6 +217,24 @@ const SITE_RULES = [
   },
 
   {
+    // Google Maps place/share URLs often append entry/g_ep attribution
+    // markers. They do not identify the place or map view, so remove only
+    // those keys and leave the complex path/data payload untouched.
+    test: (url) => /(?:^|\.)google\.[a-z.]+$/.test(url.hostname)
+                && url.pathname.startsWith('/maps'),
+    clean: (url) => {
+      const googleMapsTrackingParams = [
+        'entry', // surface/share entry marker (e.g. ttu)
+        'g_ep',  // opaque experiment/entry-point token
+      ];
+      for (const key of googleMapsTrackingParams) {
+        url.searchParams.delete(key);
+      }
+      return url;
+    },
+  },
+
+  {
     // Google Search results pages: keep content-defining params (q, tbm, tbs,
     // hl, gl, num, start, etc.) and strip session/telemetry noise.
     // Scope is intentionally narrow (Google host + /search path) so other
