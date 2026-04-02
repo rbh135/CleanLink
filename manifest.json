@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Clean Link",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Remove tracking parameters from the current tab and copy the clean link to your clipboard. All locally done, no external API calls.",
 
   "action": {
