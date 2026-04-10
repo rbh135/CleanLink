@@ -137,6 +137,21 @@ const SITE_RULES = [
       for (const key of amazonSessionParams) {
         url.searchParams.delete(key);
       }
+
+      // On Amazon product pages, these query params carry search/session state
+      // rather than product identity. Preserve variant selectors like th=.
+      if (/\/(?:[^/]+\/)?dp\/[A-Z0-9]{10}(?:\/|$)/i.test(url.pathname)) {
+        const amazonProductTrackingParams = [
+          'crid',     // search request/campaign bucket ID
+          'dib',      // opaque merchandising/session blob
+          'dib_tag',  // merchandising surface tag
+          'keywords', // originating search query
+          'sprefix',  // typed-prefix telemetry
+        ];
+        for (const key of amazonProductTrackingParams) {
+          url.searchParams.delete(key);
+        }
+      }
       return url;
     },
   },

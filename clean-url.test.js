@@ -472,6 +472,20 @@ test('Amazon: removes _encoding and content-id merchandising noise', () => {
   );
 });
 
+test('Amazon product pages: remove search/session baggage but keep variant selectors', () => {
+  eq(
+    clean('https://www.amazon.ca/RasTech-Raspberry-Pi-Active-Readers/dp/B0D41MDVXW?crid=2XJU5NELIMUE9&dib=eyJ2IjoiMSJ9.EIRWMNAsT_JPS2JI4yVop_uu9N6QvcYjg6rBgDg2zdWc0TNmQnpsM9VqzzZ0-VhrSJRwF2jT0omleWc-cEMyyQabhy00LrtpEcOZ-z_Om7r8HPnWHQ3wkT1AGy-nQS3lUL-W678g3T-WggiRmrmgh41QZoYVhZfq0QVeONvDr0LQXqVfDv8UyMVIXe5W4drk5ER76T0NSjT_eqZvjiefikTeVJHgakdgeeDBD3iQFihafExVzGdy2hce7gojhyOxC0sdyiwySfSdZ05mqKV82xt_lAAvZNWaLsKYLrwjmj8.bKvzIzKpW2QPsKMKltxnLr-91COziHvOmycix7pdRZg&dib_tag=se&keywords=raspberry%2Bpi%2B5&sprefix=rhasp%2Caps%2C141&th=1'),
+    'https://www.amazon.ca/RasTech-Raspberry-Pi-Active-Readers/dp/B0D41MDVXW?th=1',
+  );
+});
+
+test('Amazon search pages: preserve content-defining search params', () => {
+  eq(
+    clean('https://www.amazon.ca/s?k=raspberry+pi&crid=2XJU5NELIMUE9&sprefix=rhasp%2Caps%2C141'),
+    'https://www.amazon.ca/s?k=raspberry+pi&crid=2XJU5NELIMUE9&sprefix=rhasp%2Caps%2C141',
+  );
+});
+
 test('Amazon: removes path ref segment plus ie and ats personalization params', () => {
   eq(
     clean('https://www.amazon.ca/gp/buyagain/ref=pd_hp_d_atf_rp_1?ie=UTF8&ats=eyJleHBsaWNpdENhbmRpZGF0ZXMiOiJCMDlCWFNRUDZXIiwiY3VzdG9tZXJJZCI6IkFFN0ZaUDZJNFFMS1UifQ%3D%3D&pd_rd_w=XTg0o&content-id=amzn1.sym.ace16cc7-9ebe-41a0-b471-1454746eb0b6&pf_rd_p=ace16cc7-9ebe-41a0-b471-1454746eb0b6&pf_rd_r=BJZ5D08KXGHPYESX9AJ9&pd_rd_wg=uJGDb&pd_rd_r=178ac574-8459-4009-9fd3-795f7d3eb033'),
