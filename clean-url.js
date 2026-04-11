@@ -28,6 +28,8 @@ const EXACT_PARAMS = new Set([
   'dclid',   // Display Click ID (Display Network)
   'gbraid',  // iOS app conversion (SKAdNetwork)
   'wbraid',  // iOS web-to-app conversion
+  'gad_source', // Google Ads source marker
+  'gad_campaignid', // Google Ads campaign identifier
 
   // Meta / Facebook
   'fbclid',  // Facebook Click ID
@@ -50,6 +52,11 @@ const EXACT_PARAMS = new Set([
   'hsa_mt',  // HubSpot match type
   'hsa_net', // HubSpot ad network
   'hsa_ver', // HubSpot tracking schema version
+  'dm_cam',  // ad campaign identifier
+  'dm_grp',  // ad group identifier
+  'dm_ad',   // ad creative identifier
+  'dm_kw',   // paid keyword
+  'dm_net',  // ad network/source
 
   // Marketo email tracking
   'mkt_tok', // Marketo tracking token
@@ -332,7 +339,7 @@ function removeTrackingParams(url) {
 
   for (const key of url.searchParams.keys()) {
     const lower = key.toLowerCase();
-    if (EXACT_PARAMS.has(lower) || lower.startsWith('utm_')) {
+    if (EXACT_PARAMS.has(lower) || PREFIX_PARAMS.some((prefix) => lower.startsWith(prefix))) {
       keysToDelete.push(key);
     }
   }

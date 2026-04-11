@@ -180,6 +180,13 @@ test('removes vero_id, vero_conv, oly_anon_id, oly_enc_id', () => {
   );
 });
 
+test('removes gad_* and dm_* ad attribution params', () => {
+  eq(
+    clean('https://example.com/?utm_source=GoogleNAS&dm_cam=23414614310&dm_grp=190866395253&dm_ad=790682380736&dm_kw=nas%20ugreen&dm_net=adwords&gad_source=1&gad_campaignid=23414614310&gbraid=0AAAABBcXE5Hv4WeyGAbabVPrN1xauERLz&gclid=EAIaIQobChMIw-Xa3OfjkwMVrvJ5BB3uQBU6EAAYASAAEgJIX_D_BwE&id=1'),
+    'https://example.com/?id=1',
+  );
+});
+
 // -- All params together -----------------------------------------------------
 
 test('removes all known tracking params in one URL', () => {
