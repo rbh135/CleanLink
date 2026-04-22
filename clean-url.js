@@ -133,6 +133,8 @@ const SITE_RULES = [
         'linkCode',  // affiliate link code
         'linkId',    // affiliate link ID
         'ref',       // referral source (sr_1_1 = search result rank, etc.)
+        'ref_',      // share-link variant of ref (cm_sw_r_cp_ud_ct_… tokens)
+        'psc',       // share-link session marker; not present on normal navigation
         'pd_rd_r',   // personalisation session token
         'pd_rd_w',   // personalisation session token
         'pd_rd_wg',  // personalisation session token
@@ -352,6 +354,18 @@ function removeTrackingParams(url) {
   return url;
 }
 
+/** Remove parameters whose value is an empty string (e.g. `CF=`, `CFID=`). */
+function removeEmptyParams(url) {
+  const keysToDelete = [];
+  for (const [key, value] of url.searchParams.entries()) {
+    if (value === '') keysToDelete.push(key);
+  }
+  for (const key of keysToDelete) {
+    url.searchParams.delete(key);
+  }
+  return url;
+}
+
 /** Apply every site rule whose test() matches the URL. */
 function applySiteRules(url) {
   for (const rule of SITE_RULES) {
@@ -396,6 +410,7 @@ function cleanUrl(rawUrl) {
   }
 
   url = removeTrackingParams(url);
+  url = removeEmptyParams(url);
   url = applySiteRules(url);
 
   const cleaned = url.toString();

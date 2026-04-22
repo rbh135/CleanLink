@@ -227,6 +227,29 @@ test('removes duplicate tracking params (all copies)', () => {
   );
 });
 
+// -- Empty params ------------------------------------------------------------
+
+test('removes empty-value params', () => {
+  eq(
+    clean('https://www.nba.com/stats/events?CF=&CFID=&CFPARAMS=&GameID=123'),
+    'https://www.nba.com/stats/events?GameID=123',
+  );
+});
+
+test('removes a mix of empty and non-empty params', () => {
+  eq(
+    clean('https://example.com/?a=&b=keep&c='),
+    'https://example.com/?b=keep',
+  );
+});
+
+test('leaves a URL with no empty params unchanged', () => {
+  const input = 'https://example.com/?q=cats&page=2';
+  const result = cleanUrl(input);
+  assert.strictEqual(result.changed, false);
+  assert.strictEqual(result.cleaned, input);
+});
+
 // -- Already-clean URLs – changed flag ---------------------------------------
 
 test('returns changed=false for a URL with no tracking params', () => {
@@ -476,6 +499,13 @@ test('Amazon: removes _encoding and content-id merchandising noise', () => {
   eq(
     clean('https://www.amazon.ca/Giantex-Thickened-Tabletop-Cross-Shaped-Capacity/dp/B0GGHYFVVJ/?_encoding=UTF8&content-id=amzn1.sym.b72a7db1-2e40-43b1-9a87-c772f9c9cf18%3Aamzn1.symc.5a16118f-86f0-44cd-8e3e-6c5f82df43d0'),
     'https://www.amazon.ca/Giantex-Thickened-Tabletop-Cross-Shaped-Capacity/dp/B0GGHYFVVJ/',
+  );
+});
+
+test('Amazon: removes ref_ share token and psc share-link marker', () => {
+  eq(
+    clean('https://www.amazon.fr/dp/B01A8NCJ7A?psc=1&ref_=cm_sw_r_cp_ud_ct_Y7RN93WME2DHY2FAAS25'),
+    'https://www.amazon.fr/dp/B01A8NCJ7A',
   );
 });
 
