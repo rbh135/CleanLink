@@ -426,6 +426,13 @@ test('Humble Bundle: preserves non-hmb params', () => {
   );
 });
 
+test('Humble Bundle: removes mcID and linkID affiliate attribution params', () => {
+  eq(
+    clean('https://www.humblebundle.com/software/cosmos-eclipse-game-dev-assets-tools-bundle-unreal-unity-godot-software?mcID=102%3A6a690dcbfdebf60de206fadd%3Aot%3A56c3d425733462ca893deb18%3A1&linkID=6a6910a270c59c1027028f34'),
+    'https://www.humblebundle.com/software/cosmos-eclipse-game-dev-assets-tools-bundle-unreal-unity-godot-software',
+  );
+});
+
 // -- Site rule: Redbubble ---------------------------------------------------
 
 test('Redbubble: removes share attribution params but preserves page and sort', () => {

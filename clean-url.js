@@ -212,11 +212,15 @@ const SITE_RULES = [
 
   {
     // Humble Bundle uses hmb_* query params for source/placement/campaign
-    // attribution. Bundle/product identity is carried by the path.
+    // attribution, plus mcID (marketing campaign ID) and linkID (affiliate
+    // link ID) on outbound/partner links. Bundle/product identity is carried
+    // entirely by the path.
     test: (url) => /(?:^|\.)humblebundle\.com$/.test(url.hostname),
     clean: (url) => {
+      const humbleTrackingParams = ['mcid', 'linkid'];
       for (const key of [...url.searchParams.keys()]) {
-        if (key.toLowerCase().startsWith('hmb_')) {
+        const lower = key.toLowerCase();
+        if (lower.startsWith('hmb_') || humbleTrackingParams.includes(lower)) {
           url.searchParams.delete(key);
         }
       }
