@@ -523,6 +523,13 @@ test('Amazon product pages: remove search/session baggage but keep variant selec
   );
 });
 
+test('Amazon: removes ufe (app deep-link attribution) and xpid (experiment ID)', () => {
+  eq(
+    clean('https://www.amazon.ae/ASUS-ROG-Wireless-Magnetic-Programmable/dp/B09726KT4R?ufe=app_do%3Aamzn1.fos.b4f74a7b-9d54-420b-9003-7e54957e6f89&xpid=vhQH7mOqeMlL5&th=1'),
+    'https://www.amazon.ae/ASUS-ROG-Wireless-Magnetic-Programmable/dp/B09726KT4R?th=1',
+  );
+});
+
 test('Amazon search pages: preserve content-defining search params', () => {
   eq(
     clean('https://www.amazon.ca/s?k=raspberry+pi&crid=2XJU5NELIMUE9&sprefix=rhasp%2Caps%2C141'),

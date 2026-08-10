@@ -142,6 +142,8 @@ const SITE_RULES = [
         'pf_rd_r',   // page feature token
         'sr',        // search result rank position (tracking)
         'qid',       // query session ID (changes per search, not content)
+        'ufe',       // app deep-link/experiment attribution token (app_do:...)
+        'xpid',      // experiment/placement session ID
       ];
       for (const key of amazonSessionParams) {
         url.searchParams.delete(key);
