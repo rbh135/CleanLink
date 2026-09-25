@@ -61,6 +61,9 @@ const EXACT_PARAMS = new Set([
   // Marketo email tracking
   'mkt_tok', // Marketo tracking token
 
+  // Kit (formerly ConvertKit) newsletter tracking
+  'ck_subscriber_id', // per-recipient subscriber ID appended to newsletter links
+
   // Instagram share tracking
   'igshid',  // Instagram Share ID
   'igsh',    // Instagram share token variant
@@ -93,6 +96,9 @@ const EXACT_PARAMS = new Set([
   // Omnisend subscriber tracking
   'oly_anon_id',
   'oly_enc_id',
+
+  // Blue3 / bol.com-style affiliate click ID (seen on Dutch webshops)
+  'bl3nlclid',
 ]);
 
 // Prefix-match rules (case-insensitive).
@@ -104,6 +110,15 @@ const EXACT_PARAMS = new Set([
 // ---------------------------------------------------------------------------
 const PREFIX_PARAMS = [
   'utm_',
+  'etrias_', // Etrias (Dutch price-comparison/affiliate feed) source & campaign
+];
+
+// Params that are too generic to strip on their own, but are tracking when
+// they appear alongside a given tracking prefix.
+//   Etrias appends a bare `p` (feed/partner ID) next to etrias_*; elsewhere
+//   `p` is often pagination or a content ID, so only drop it in that context.
+const COMPANION_PARAMS = [
+  { prefix: 'etrias_', params: ['p'] },
 ];
 
 // Site-specific cleanup rules.
@@ -349,6 +364,12 @@ function removeTrackingParams(url) {
     const lower = key.toLowerCase();
     if (EXACT_PARAMS.has(lower) || PREFIX_PARAMS.some((prefix) => lower.startsWith(prefix))) {
       keysToDelete.push(key);
+    }
+  }
+
+  for (const { prefix, params } of COMPANION_PARAMS) {
+    if (keysToDelete.some((key) => key.toLowerCase().startsWith(prefix))) {
+      keysToDelete.push(...params);
     }
   }
 

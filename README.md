@@ -76,9 +76,12 @@ When you click the toolbar icon, Clean Link:
 | `mc_cid`, `mc_eid`                  | Mailchimp                  | exact      |
 | `_hsenc`, `_hsmi`                   | HubSpot                    | exact      |
 | `mkt_tok`                           | Marketo                    | exact      |
+| `ck_subscriber_id`                  | Kit (ConvertKit)           | exact      |
 | `igshid`                            | Instagram                  | exact      |
 | `twclid`                            | Twitter / X                | exact      |
 | `yclid`                             | Yandex                     | exact      |
+| `bl3nlclid`                         | Dutch affiliate click ID   | exact      |
+| `etrias_*` (+ `p` alongside it)     | Etrias                     | prefix     |
 | `vero_id`                           | Vero                       | exact      |
 | `oly_anon_id`, `oly_enc_id`         | Omnisend                   | exact      |
 

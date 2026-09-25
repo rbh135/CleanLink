@@ -137,6 +137,24 @@ test('removes mkt_tok', () => {
   eq(clean('https://example.com/?mkt_tok=abc'), 'https://example.com/');
 });
 
+test('removes ck_subscriber_id (Kit/ConvertKit newsletter link)', () => {
+  eq(
+    clean('https://www.cobbleweb.co.uk/jobs/qa/?ck_subscriber_id=3412195546'),
+    'https://www.cobbleweb.co.uk/jobs/qa/',
+  );
+});
+
+test('removes etrias_* params, their companion p, and bl3nlclid', () => {
+  eq(
+    clean('https://www.bedsupply.eu/badjas-pip-studio-good-evening-geel.html?etrias_source=2&etrias_campaign=15&p=1117573&bl3nlclid=ab1d522c-7195-4277-9f7a-dc4473ed74d9'),
+    'https://www.bedsupply.eu/badjas-pip-studio-good-evening-geel.html',
+  );
+});
+
+test('preserves p when no etrias_* params are present', () => {
+  eq(clean('https://example.com/category.html?p=2'), 'https://example.com/category.html?p=2');
+});
+
 test('removes igshid', () => {
   eq(clean('https://www.instagram.com/p/abc/?igshid=xyz'), 'https://www.instagram.com/p/abc/');
 });
