@@ -172,6 +172,8 @@ const SITE_RULES = [
           'dib',      // opaque merchandising/session blob
           'dib_tag',  // merchandising surface tag
           'keywords', // originating search query
+          'refinements', // search filters carried over from the results page
+          'rnid',     // refinement node ID of the last-used search filter
           'sprefix',  // typed-prefix telemetry
         ];
         for (const key of amazonProductTrackingParams) {

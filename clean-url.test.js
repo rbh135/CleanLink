@@ -548,6 +548,13 @@ test('Amazon: removes ufe (app deep-link attribution) and xpid (experiment ID)',
   );
 });
 
+test('Amazon product pages: remove carried-over search refinements and rnid', () => {
+  eq(
+    clean('https://www.amazon.fr/-/en/GMKtec-K11-Computer-Dual-Port-DisplayPort/dp/B0F2Y8BQV8?refinements=p_n_g-1003090150111%3A27344110031%2Cp_n_condition-type%3A15135266031&rnid=15135264031&th=1'),
+    'https://www.amazon.fr/-/en/GMKtec-K11-Computer-Dual-Port-DisplayPort/dp/B0F2Y8BQV8?th=1',
+  );
+});
+
 test('Amazon search pages: preserve content-defining search params', () => {
   eq(
     clean('https://www.amazon.ca/s?k=raspberry+pi&crid=2XJU5NELIMUE9&sprefix=rhasp%2Caps%2C141'),
