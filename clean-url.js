@@ -187,7 +187,8 @@ const SITE_RULES = [
   {
     // AliExpress product pages: the item ID lives entirely in the URL path
     // (/item/XXXXXXXXXX.html), so every query parameter is decorative.
-    // spm, scm*, pvid, gps-id, _t, tpp_buckets, pdp_* and utparam-url are
+    // spm, scm*, pvid, gps-id, _t, tpp_buckets, pdp_*, utparam-url, algo_*
+    // and curPageLogUid are
     // all session/placement/A-B-test noise with no content-defining purpose.
     test: (url) => /(?:^|\.)aliexpress\.com$/.test(url.hostname),
     clean: (url) => {
@@ -203,6 +204,9 @@ const SITE_RULES = [
         'pdp_ext_f',    // page-detail extra fields (fromPage, sceneId, …)
         'pdp_npi',      // pricing display data redundant with page content
         'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
+        'algo_pvid',    // recommendation-algorithm page view ID
+        'algo_exp_id',  // recommendation-algorithm experiment ID
+        'curPageLogUid', // logging ID of the page the link was clicked from
       ];
       for (const key of aliexpressTrackingParams) {
         url.searchParams.delete(key);

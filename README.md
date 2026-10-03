@@ -93,7 +93,7 @@ The `utm_` prefix rule catches any current or future `utm_*` variant without req
 | ------- | ---------------------------------------------------------------------- | ------------------------------ |
 | YouTube | `si`, `feature`, `app`, `src_vid`, `pp`                                | `v`, `t`, `list`, `index`, ... |
 | Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ufe`, `xpid`; on `/dp/` pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix` | `th`, `k`, `i`, ...            |
-| AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url` | path item ID, content params |
+| AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url`, `algo_pvid`, `algo_exp_id`, `curPageLogUid` | path item ID, content params |
 | Redbubble | `ref`, `ref_site`                                                    | `page`, `sortOrder`, ...       |
 | Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
 

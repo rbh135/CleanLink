@@ -585,6 +585,13 @@ test('AliExpress: removes all known tracking params including utparam-url', () =
   );
 });
 
+test('AliExpress: removes recommendation algo params and curPageLogUid, keeping hash', () => {
+  eq(
+    clean('https://fr.aliexpress.com/item/1005012681096685.html?algo_pvid=9e3f3ba7-680e-48a2-8342-d50c484df65b&algo_exp_id=9e3f3ba7-680e-48a2-8342-d50c484df65b-4&curPageLogUid=zV79OSq8JCrN#nav-description'),
+    'https://fr.aliexpress.com/item/1005012681096685.html#nav-description',
+  );
+});
+
 test('AliExpress: rule applies to all regional subdomains', () => {
   eq(
     clean('https://de.aliexpress.com/item/999.html?spm=tracking&pvid=session'),
