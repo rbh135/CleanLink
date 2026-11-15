@@ -432,6 +432,13 @@ test('Kickstarter project pages: remove discovery/share params', () => {
   );
 });
 
+test('Kickstarter project sub-pages: remove ref', () => {
+  eq(
+    clean('https://www.kickstarter.com/projects/a/b/posts/123?ref=x'),
+    'https://www.kickstarter.com/projects/a/b/posts/123',
+  );
+});
+
 test('Kickstarter non-project pages are not affected by the Kickstarter rule', () => {
   eq(
     clean('https://www.kickstarter.com/discover/advanced?ref=nav_search&term=desk'),
@@ -452,6 +459,13 @@ test('Humble Bundle: preserves non-hmb params', () => {
   eq(
     clean('https://www.humblebundle.com/games/checkmate-chess-games-collection?gift=true&hmb_source=homepage'),
     'https://www.humblebundle.com/games/checkmate-chess-games-collection?gift=true',
+  );
+});
+
+test('Humble Bundle: removes partner affiliate ID', () => {
+  eq(
+    clean('https://www.humblebundle.com/store/x?partner=b&gift=true'),
+    'https://www.humblebundle.com/store/x?gift=true',
   );
 });
 

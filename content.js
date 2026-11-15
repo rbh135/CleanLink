@@ -49,14 +49,15 @@
 
     // Legacy fallback – still works in all current Chrome versions.
     const previousFocus = document.activeElement;
+    const root = document.body || document.documentElement; // raw SVG/XML pages have no body
     const el = document.createElement('textarea');
     el.value = text;
     el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
-    document.body.appendChild(el);
+    root.appendChild(el);
     el.focus();
     el.select();
     const ok = document.execCommand('copy');
-    document.body.removeChild(el);
+    el.remove();
     previousFocus?.focus?.(); // give focus back to where the user was
     if (!ok) throw new Error('execCommand returned false');
   }
@@ -94,7 +95,7 @@
       'transition:opacity .25s ease',
     ].join(';');
 
-    document.body.appendChild(el);
+    (document.body || document.documentElement).appendChild(el);
     // Set the text after insertion: live regions announce changes, not initial content.
     el.textContent = message;
 

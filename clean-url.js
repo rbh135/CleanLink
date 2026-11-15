@@ -167,9 +167,7 @@ const SITE_RULES = [
       'xpid',      // experiment/placement session ID
     ],
     clean: (url) => {
-      if (/\/ref=[^/?#]+\/?$/.test(url.pathname)) {
-        url.pathname = url.pathname.replace(/\/ref=[^/?#]+\/?$/, '');
-      }
+      url.pathname = url.pathname.replace(/\/ref=[^/?#]+\/?$/, '');
 
       // On Amazon product pages, these query params carry search/session state
       // rather than product identity. Preserve variant selectors like th=.
@@ -213,24 +211,25 @@ const SITE_RULES = [
   },
 
   {
-    // Kickstarter project pages identify the content entirely in the path
-    // (/projects/{creator}/{project-slug}). Share/discovery params like ref
-    // and category_id do not change which project page loads.
+    // Kickstarter project pages and their sub-pages (posts, comments, …)
+    // identify the content entirely in the path
+    // (/projects/{creator}/{project-slug}/…). Share/discovery params like ref
+    // and category_id do not change which page loads.
     test: (url) => /(?:^|\.)kickstarter\.com$/.test(url.hostname)
-                && /^\/projects\/[^/]+\/[^/]+\/?$/.test(url.pathname),
+                && /^\/projects\/[^/]+\/[^/]+(?:\/|$)/.test(url.pathname),
     params: ['ref', 'category_id'],
   },
 
   {
     // Humble Bundle uses hmb_* query params for source/placement/campaign
     // attribution, plus mcID (marketing campaign ID) and linkID (affiliate
-    // link ID) on outbound/partner links. Bundle/product identity is carried
-    // entirely by the path.
+    // link ID) on outbound/partner links, and partner (Humble Partner
+    // affiliate ID). Bundle/product identity is carried entirely by the path.
     test: (url) => /(?:^|\.)humblebundle\.com$/.test(url.hostname),
     clean: (url) => {
       dropParams(url, (key) => {
         const lower = key.toLowerCase();
-        return lower.startsWith('hmb_') || lower === 'mcid' || lower === 'linkid';
+        return lower.startsWith('hmb_') || ['mcid', 'linkid', 'partner'].includes(lower);
       });
     },
   },
