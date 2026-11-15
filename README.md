@@ -1,273 +1,158 @@
-# Clean Link
+<p align="center">
+  <img src="icons/CleanLink_logo_128.png" width="96" height="96" alt="Clean Link logo">
+</p>
 
-A minimal Chrome extension that removes tracking parameters from the current tab's URL and copies the clean link to your clipboard.
+<h1 align="center">Clean Link</h1>
 
-Click the toolbar icon → clean URL is on your clipboard and a brief toast confirms it. No popup opens.
+<p align="center">
+  A Chrome extension that copies the current page's link without the trackers.<br>
+  One click. No popup, no settings, no network requests.
+</p>
 
----
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/clean-link/ajaeglecjpobpjcpbfbbifalilkdckne"><strong>Add to Chrome</strong></a>
+</p>
 
 ## What it does
 
-When you click the toolbar icon, Clean Link:
+Click the toolbar icon. Clean Link removes the tracking parameters from the current tab's URL, copies the clean link to your clipboard, and confirms with a small toast in the corner of the page.
 
-1. Reads the URL of the current active tab.
-2. Strips known tracking and analytics query parameters.
-3. Applies a small set of site-specific rules (Amazon, AliExpress, YouTube, Google Search and Maps, Kickstarter, Humble Bundle, Redbubble, AutoTrader.ca).
-4. Copies the result to your clipboard.
-5. Shows a brief toast in the corner of the page: green if tracking was removed or the link was already clean, red on error. The toast dismisses itself after 2.5 seconds.
+```diff
+- https://tardiglitch.com/?utm_source=instagram&utm_medium=social&fbclid=IwAR2abc123
++ https://tardiglitch.com/
 
----
+- https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc123&feature=shared
++ https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
-## Examples
+- https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent&ref=artist_profile_share&ref_site=share
++ https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent
 
-**Article with UTM campaign params:**
+- https://www.amazon.com/dp/B08XYZ1234/ref=sr_1_1?tag=mysite-20&pd_rd_r=xyz&th=1
++ https://www.amazon.com/dp/B08XYZ1234?th=1
 
-- Before: `https://example.com/article?id=42&utm_source=twitter&utm_medium=social`
-- After: `https://example.com/article?id=42`
-
-**YouTube share link with tracking ID:**
-
-- Before: `https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc123&feature=shared`
-- After: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
-
-**Amazon product with affiliate tag and session noise:**
-
-- Before: `https://www.amazon.com/dp/B08XYZ?tag=mysite-20&ref=sr_1_1&pd_rd_r=xyz`
-- After: `https://www.amazon.com/dp/B08XYZ`
-
-**Facebook share link:**
-
-- Before: `https://example.com/page?fbclid=IwAR2_abc123&color=red`
-- After: `https://example.com/page?color=red`
-
-**Search URL with UTM appended by the site:**
-
-- Before: `https://www.google.com/search?q=privacy+tools&utm_source=homepage`
-- After: `https://www.google.com/search?q=privacy+tools`
-
-**Google Search URL with session/telemetry noise:**
-
-- Before: `https://www.google.com/search?q=wayback+short+movie&client=ms-android-samsung-ss&sxsrf=...&ei=...&oq=wayback+short+movie&sclient=mobile-gws-wiz-serp#ebo=0`
-- After: `https://www.google.com/search?q=wayback+short+movie`
-
-**AliExpress product URL with placement/session params:**
-
-- Before: `https://fr.aliexpress.com/item/1005009851200333.html?spm=...&pvid=...&_t=...`
-- After: `https://fr.aliexpress.com/item/1005009851200333.html`
-
-**Redbubble artist page with share attribution:**
-
-- Before: `https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent&ref=artist_profile_share&ref_site=share`
-- After: `https://www.redbubble.com/people/Assassimation/explore?page=1&sortOrder=recent`
-
-**Already clean URL:** copied as-is, and the toast says so.
-
----
-
-## Tracking parameters removed
-
-### Generic rules (applied to all URLs)
-
-| Parameter(s)                        | Source                     | Match type |
-| ----------------------------------- | -------------------------- | ---------- |
-| `utm_*` (any variant)               | Google Analytics / generic | prefix     |
-| `gclid`, `dclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid` | Google Ads | exact |
-| `fbclid`, `mibextid`                | Meta / Facebook            | exact      |
-| `mc_cid`, `mc_eid`                  | Mailchimp                  | exact      |
-| `wickedid`                          | Newsletter attribution     | exact      |
-| `_hsenc`, `_hsmi`                   | HubSpot email              | exact      |
-| `hsa_acc`, `hsa_cam`, `hsa_grp`, `hsa_ad`, `hsa_src`, `hsa_tgt`, `hsa_kw`, `hsa_mt`, `hsa_net`, `hsa_ver` | HubSpot ads | exact |
-| `dm_cam`, `dm_grp`, `dm_ad`, `dm_kw`, `dm_net` | Ad campaign attribution | exact |
-| `mkt_tok`                           | Marketo                    | exact      |
-| `ck_subscriber_id`                  | Kit (ConvertKit)           | exact      |
-| `igshid`, `igsh`                    | Instagram                  | exact      |
-| `twclid`                            | Twitter / X                | exact      |
-| `yclid`                             | Yandex                     | exact      |
-| `msclkid`                           | Microsoft Ads              | exact      |
-| `ttclid`                            | TikTok Ads                 | exact      |
-| `rb_clickid`                        | Reddit Ads                 | exact      |
-| `epik`                              | Pinterest                  | exact      |
-| `bl3nlclid`                         | Dutch affiliate click ID   | exact      |
-| `etrias_*` (+ `p` alongside it)     | Etrias                     | prefix     |
-| `vero_id`, `vero_conv`              | Vero                       | exact      |
-| `oly_anon_id`, `oly_enc_id`         | Omnisend                   | exact      |
-| any `name=` with an empty value     | leftover form fields       | —          |
-
-The `utm_` prefix rule catches any current or future `utm_*` variant without requiring an explicit entry per parameter.
-
-Names are matched case-insensitively. A bare flag with no `=` (e.g. `?module`) is kept, because it can select content. Parameters that are kept are left byte-for-byte as the site wrote them.
-
-### Site-specific rules
-
-| Site    | Params removed                                                         | Params kept                    |
-| ------- | ---------------------------------------------------------------------- | ------------------------------ |
-| YouTube (incl. `m.`, `music.`, `youtu.be`) | `si`, `feature`, `app`, `src_vid`, `pp` | `v`, `t`, `list`, `index`, ... |
-| Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `ref_`, `psc`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ufe`, `xpid`; on `/dp/` and `/gp/product/` pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix` | `th`, `k`, `i`, ...            |
-| AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url`, `algo_pvid`, `algo_exp_id`, `curPageLogUid` | path item ID, content params |
-| Redbubble | `ref`, `ref_site`                                                    | `page`, `sortOrder`, ...       |
-| Kickstarter (project pages and sub-pages) | `ref`, `category_id`                               | everything else                |
-| Humble Bundle | `hmb_*`, `mcID`, `linkID`, `partner`                                 | everything else                |
-| Google Maps (`/maps`) | `entry`, `g_ep`                                          | path, everything else          |
-| AutoTrader.ca | `search_id`; on `/offers/` pages also `sort`, `desc`, `position`, `source`, `source_otp`, `order_bucket`, `boost_level`, `applied_boost_level`, `relevance_adjustment`, `boosting_product` | search filters, listing ID |
-| Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
-
----
-
-## Why some parameters are preserved
-
-Many query parameters serve dual purposes or have ambiguous names. Clean Link only removes parameters with a documented, unambiguous tracking purpose that carries no content identity.
-
-**Parameters we deliberately do not remove globally:**
-
-- `ref` – used by GitHub for branch names, by many sites for pagination refs. Only removed on Amazon, Kickstarter project pages and Redbubble, where its tracking purpose is well-documented.
-- `source` – often describes internal navigation (e.g. search → article).
-- `id`, `pid`, `cid`, `sid` – almost always content or session identifiers.
-- `page`, `sort`, `filter`, `variant`, `color`, `size` – UI state, not tracking.
-- Any parameter we cannot confirm is tracking-only.
-
-If a parameter's purpose is ambiguous — even slightly — it is preserved.
-
----
-
-## Conservative vs aggressive cleaning
-
-Some tools take an **aggressive** approach: remove everything except an explicit allowlist of "safe" parameters. This is thorough but has real costs:
-
-- Removing the wrong parameter can silently break the page (session tokens, pagination, authenticated content).
-- An allowlist approach is hard to audit: what's in the list? Why is each entry there?
-- A broken shared link is harder to debug than a link with a leftover tracking param.
-
-Clean Link takes the **conservative** approach: start from zero removals and only add parameters we are confident are tracking-only. This means:
-
-- A small number of obscure trackers may survive. That is acceptable.
-- Legitimate content parameters will not be removed. That is required.
-- The rule lists in `clean-url.js` are short enough to read in two minutes.
-
-If you want more aggressive cleaning for a specific site, add a targeted rule to `SITE_RULES` rather than widening the generic lists.
-
----
-
-## Privacy guarantees
-
-- **No network requests** – the extension never contacts any server, ever.
-- **No telemetry** – nothing is tracked, logged, or reported anywhere.
-- **No remote configuration** – all logic lives in the installed files.
-- **No data storage** – nothing is written to `chrome.storage` or `localStorage`.
-- **No third-party scripts** – zero external dependencies.
-- **No `eval` or dynamic code** – the CSP is declared explicitly in `manifest.json`.
-
-You can audit every line: a handful of small files, no build step, no minification, no network access.
-
----
-
-## Permissions
-
-**`activeTab`** – allows the extension to inject scripts into the tab you are currently viewing, but only when you explicitly click the icon. There is no persistent access to your tabs or browsing history.
-
-**`scripting`** – required to call `chrome.scripting.executeScript`, which injects `clean-url.js` and `content.js` into the active tab. Without this, the extension cannot interact with the page at all.
-
-**`clipboardWrite`** – grants `navigator.clipboard.writeText()` access to the injected content script. Used as the primary clipboard path; `document.execCommand('copy')` serves as a fallback if the modern API is unavailable.
-
-No host permissions (`<all_urls>` or `*://*/*`) are requested.
-
-The `content_security_policy` field in `manifest.json` is declared explicitly for auditors:
-
-```text
-script-src 'self'; object-src 'none';
+- https://www.google.com/search?q=privacy+tools&client=firefox-b-d&sxsrf=abc&ei=xyz
++ https://www.google.com/search?q=privacy+tools
 ```
 
-This is MV3's default, written out so you don't have to look it up.
+If the link is already clean, it is copied as it is and the toast says so.
 
----
+## Install
 
-## File structure
+**[Get Clean Link from the Chrome Web Store](https://chromewebstore.google.com/detail/clean-link/ajaeglecjpobpjcpbfbbifalilkdckne)**, then pin it from the puzzle-piece menu so it is one click away.
 
-```text
-CleanLink/
-├── manifest.json        # MV3 manifest – permissions and CSP
-├── background.js        # Service worker – handles icon click, injects scripts
-├── clean-url.js         # Pure URL-cleaning logic (no browser APIs)
-├── content.js           # Injected into page – cleans URL, writes clipboard, shows toast
-├── clean-url.test.js    # Test suite – run with node clean-url.test.js
-└── README.md
+To run it from source instead:
+
+1. Download or clone this repository.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Click **Load unpacked** and select the folder that contains `manifest.json`.
+
+## Privacy
+
+Clean Link runs entirely on your computer.
+
+- It makes no network requests and has no telemetry.
+- It stores nothing: no `chrome.storage`, no `localStorage`.
+- It loads no remote configuration and no third-party code.
+- It has no build step and no minified files. What you read in this repository is exactly what runs.
+
+It asks for three permissions and no access to your browsing history:
+
+| Permission       | Why it is needed                                                   |
+| ---------------- | ------------------------------------------------------------------ |
+| `activeTab`      | Read the URL of the tab you are on, only when you click the icon.  |
+| `scripting`      | Run the cleaner in that tab and show the toast.                    |
+| `clipboardWrite` | Put the clean link on your clipboard.                              |
+
+## What gets removed
+
+Clean Link is deliberately conservative. A parameter is removed only when its sole job is tracking. Anything that might select content (`id`, `page`, `sort`, `variant`, and the like) is kept, and so is anything ambiguous. A leftover tracker is a small annoyance; a broken link is a failure.
+
+Parameters that are kept are left exactly as the site wrote them.
+
+<details>
+<summary><strong>On every site</strong></summary>
+
+<br>
+
+Names are matched case-insensitively.
+
+- **Campaign tags:** every `utm_*` parameter
+- **Google Ads:** `gclid`, `dclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid`
+- **Meta:** `fbclid`, `mibextid`
+- **Instagram:** `igshid`, `igsh`
+- **Microsoft Ads:** `msclkid`
+- **TikTok Ads:** `ttclid`
+- **Twitter / X:** `twclid`
+- **Reddit Ads:** `rb_clickid`
+- **Pinterest:** `epik`
+- **Yandex:** `yclid`
+- **Mailchimp:** `mc_cid`, `mc_eid`
+- **HubSpot:** `_hsenc`, `_hsmi`, and the `hsa_*` ad parameters (`hsa_acc`, `hsa_cam`, `hsa_grp`, `hsa_ad`, `hsa_src`, `hsa_tgt`, `hsa_kw`, `hsa_mt`, `hsa_net`, `hsa_ver`)
+- **Marketo:** `mkt_tok`
+- **Kit (ConvertKit):** `ck_subscriber_id`
+- **Vero:** `vero_id`, `vero_conv`
+- **Omnisend:** `oly_anon_id`, `oly_enc_id`
+- **Other ad and newsletter attribution:** `dm_cam`, `dm_grp`, `dm_ad`, `dm_kw`, `dm_net`, `wickedid`, `bl3nlclid`
+- **Etrias:** every `etrias_*` parameter, plus `p` when it appears next to one
+- **Empty values:** any `name=` with nothing after the `=`. A bare flag such as `?module` is kept.
+
+</details>
+
+<details>
+<summary><strong>On specific sites</strong></summary>
+
+<br>
+
+- **YouTube** (including `m.`, `music.` and `youtu.be`): `si`, `feature`, `app`, `src_vid`, `pp`. The video, timestamp and playlist are kept.
+- **Amazon:** the `/ref=…` path segment, `tag`, `linkCode`, `linkId`, `ref`, `ref_`, `psc`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ie`, `_encoding`, `content-id`, `ats`, `ufe`, `xpid`. On product pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix`. Variant selectors such as `th` are kept.
+- **Google Search:** `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, and `ebo` in the hash. The query and its filters are kept.
+- **Google Maps:** `entry`, `g_ep`
+- **AliExpress:** `spm`, `gps-id`, `scm`, `scm_id`, `scm-url`, `pvid`, `_t`, `tpp_buckets`, `pdp_ext_f`, `pdp_npi`, `utparam-url`, `algo_pvid`, `algo_exp_id`, `curPageLogUid`
+- **Kickstarter** (project pages): `ref`, `category_id`
+- **Humble Bundle:** every `hmb_*` parameter, `mcID`, `linkID`, `partner`
+- **Redbubble:** `ref`, `ref_site`
+- **AutoTrader.ca:** `search_id`. On listing pages also `sort`, `desc`, `position`, `source`, `source_otp`, `order_bucket`, `boost_level`, `applied_boost_level`, `relevance_adjustment`, `boosting_product`.
+
+</details>
+
+The rules live in [`clean-url.js`](clean-url.js), which is the source of truth.
+
+## Limitations
+
+- **Browser pages.** Chrome does not let extensions run on `chrome://` pages, the Web Store, or similar. Nothing is copied there, and the icon shows a `✗` badge for two seconds.
+- **Local files.** `file://` pages are not cleaned.
+- **Short links and redirect wrappers.** Links such as `bit.ly/…` or `l.facebook.com/l.php?u=…` are copied as they are. Resolving them would need a network request, which Clean Link never makes.
+- **Trackers in the hash.** Tracking that sits after the `#` is mostly left alone. The one exception is `#ebo` on Google Search.
+
+## Report a problem
+
+Found a tracker that survives, or a cleaned link that opens the wrong page? [Open an issue](https://github.com/rbh135/CleanLink/issues/new/choose) with the original URL and what was copied.
+
+Issues are public, so replace anything personal in the URL (session tokens, account IDs) with `XXXX` first. Keep the parameter names: they are what matter.
+
+## Contributing
+
+Most fixes are a single line in [`clean-url.js`](clean-url.js), a pure function with no browser APIs.
+
+A parameter that is tracking on every site goes in `EXACT_PARAMS`. One that is only safe to remove on a particular site gets a rule in `SITE_RULES`:
+
+```js
+{
+  // Which URLs the rule applies to.
+  test: (url) => url.hostname === 'open.spotify.com',
+
+  // Exact, case-sensitive parameter names to remove.
+  params: ['si'],
+}
 ```
 
-The URL-cleaning logic in `clean-url.js` is a pure function with no side-effects. It can be tested in Node without a browser, and can be read without understanding how Chrome extensions work.
+For anything a list cannot express, such as cleaning the path, add an optional `clean(url)` function that edits the URL in place. Inside it, use `dropParams(url, [...])` rather than `url.searchParams.delete()`, which re-encodes every parameter it keeps.
 
----
-
-## How to load in Chrome (unpacked)
-
-1. Clone or download this repository.
-2. Open Chrome and go to `chrome://extensions/`.
-3. Enable **Developer mode** (toggle, top-right corner).
-4. Click **Load unpacked**.
-5. Select the folder containing `manifest.json`.
-
-Pin the extension from the puzzle-piece menu for one-click access.
-
----
-
-## Running the tests
-
-No framework required. The test file uses only Node's built-in `assert` module:
+Add a test for every rule, then run the suite. It needs only Node, with no dependencies:
 
 ```bash
 node clean-url.test.js
 ```
-
-Exit code is `0` on full pass, `1` on any failure.
-
----
-
-## Reporting a problem
-
-Found a tracker that survives, or a cleaned link that opens the wrong page? [Open an issue](https://github.com/rbh135/CleanLink/issues/new/choose) with the original URL and what was copied.
-
-Issues are public: replace anything personal in the URL (session tokens, account IDs) with `XXXX` first. Keep the parameter names.
-
----
-
-## Current limitations
-
-- **`chrome://`, `about:`, and other restricted pages cannot be cleaned.** Chrome does not allow script injection into these pages, so nothing is copied; the toolbar icon shows a `✗` badge for two seconds instead of a toast.
-- **`file://` pages are not cleaned.** By default, script injection is blocked. If a user manually enables "Allow access to file URLs", the cleaner still rejects `file://` as an unsupported scheme.
-- **Fragment-only tracking** is mostly not removed. `#ebo=0` is stripped on Google Search, but other hash trackers (e.g. `#xtor=RSS-...`) are currently preserved.
-- **URL shorteners** (bit.ly, t.co, etc.) are not expanded. Following a redirect requires a network request, which violates the no-network-requests guarantee.
-- **Redirect wrappers** (e.g. `https://l.facebook.com/l.php?u=...`) are not unwrapped for the same reason.
-
----
-
-## Adding domain-specific rules
-
-The `SITE_RULES` array in `clean-url.js` is the right place for targeted additions. Each rule is a plain object:
-
-```js
-{
-  // Return true if this rule applies to the URL.
-  test: (url) => url.hostname === 'open.spotify.com',
-
-  // Exact (case-sensitive) parameter names to remove.
-  params: ['si'], // Spotify share instance ID
-}
-```
-
-For anything a plain list cannot express (path cleanup, rules that depend on the path), add an optional `clean(url)` function that edits the URL in place. Use the `dropParams(url, [...])` helper there rather than `url.searchParams.delete()`, which re-encodes every parameter it keeps.
-
-Rules here only apply to URLs that match `test()`, so they carry no risk of breaking unrelated sites. Add a test case to `clean-url.test.js` for every rule you add.
-
-Examples worth adding:
-
-| Site           | Params to remove               | Params to keep  |
-| -------------- | ------------------------------ | --------------- |
-| Spotify        | `si`                           | everything else |
-| Twitter / X    | `s` (share source)             | everything else |
-| Reddit         | `utm_*` (added by share button)| everything else |
-| Apple Podcasts | `itsct`, `itscg`               | everything else |
-| TikTok         | `_r`, `is_from_webapp`         | everything else |
-| Substack       | `utm_*` (added on share)       | everything else |
-
----
 
 ## License
 
