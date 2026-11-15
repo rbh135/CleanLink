@@ -1,0 +1,47 @@
+name: Link not cleaned correctly
+description: A tracker survived, or the cleaned link opens the wrong page.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Issues are public.** Before pasting a URL, replace anything personal in it
+        (session tokens, account or order IDs, email addresses) with `XXXX`.
+        Keep the parameter names as they are; the names are what matter.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong?
+      options:
+        - A tracking parameter was not removed
+        - The cleaned link is broken or opens a different page
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: original
+    attributes:
+      label: Original URL
+      placeholder: https://example.com/page?id=42&some_tracker=XXXX
+    validations:
+      required: true
+  - type: input
+    id: copied
+    attributes:
+      label: What Clean Link copied
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown on chrome://extensions
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else

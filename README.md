@@ -105,8 +105,8 @@ Names are matched case-insensitively. A bare flag with no `=` (e.g. `?module`) i
 | Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `ref_`, `psc`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ufe`, `xpid`; on `/dp/` and `/gp/product/` pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix` | `th`, `k`, `i`, ...            |
 | AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url`, `algo_pvid`, `algo_exp_id`, `curPageLogUid` | path item ID, content params |
 | Redbubble | `ref`, `ref_site`                                                    | `page`, `sortOrder`, ...       |
-| Kickstarter (project pages) | `ref`, `category_id`                               | everything else                |
-| Humble Bundle | `hmb_*`, `mcID`, `linkID`                                        | everything else                |
+| Kickstarter (project pages and sub-pages) | `ref`, `category_id`                               | everything else                |
+| Humble Bundle | `hmb_*`, `mcID`, `linkID`, `partner`                                 | everything else                |
 | Google Maps (`/maps`) | `entry`, `g_ep`                                          | path, everything else          |
 | AutoTrader.ca | `search_id`; on `/offers/` pages also `sort`, `desc`, `position`, `source`, `source_otp`, `order_bucket`, `boost_level`, `applied_boost_level`, `relevance_adjustment`, `boosting_product` | search filters, listing ID |
 | Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
@@ -220,6 +220,14 @@ Exit code is `0` on full pass, `1` on any failure.
 
 ---
 
+## Reporting a problem
+
+Found a tracker that survives, or a cleaned link that opens the wrong page? [Open an issue](https://github.com/rbh135/CleanLink/issues/new/choose) with the original URL and what was copied.
+
+Issues are public: replace anything personal in the URL (session tokens, account IDs) with `XXXX` first. Keep the parameter names.
+
+---
+
 ## Current limitations
 
 - **`chrome://`, `about:`, and other restricted pages cannot be cleaned.** Chrome does not allow script injection into these pages, so nothing is copied; the toolbar icon shows a `✗` badge for two seconds instead of a toast.
@@ -258,3 +266,9 @@ Examples worth adding:
 | Apple Podcasts | `itsct`, `itscg`               | everything else |
 | TikTok         | `_r`, `is_from_webapp`         | everything else |
 | Substack       | `utm_*` (added on share)       | everything else |
+
+---
+
+## License
+
+[MIT](LICENSE)
