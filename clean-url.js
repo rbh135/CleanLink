@@ -30,6 +30,8 @@ const EXACT_PARAMS = new Set([
   'wbraid',  // iOS web-to-app conversion
   'gad_source', // Google Ads source marker
   'gad_campaignid', // Google Ads campaign identifier
+  'srsltid', // Google Merchant Center auto-tagging (Shopping result click ID)
+  '_gl',     // Google Analytics cross-domain linker (carries client/session IDs)
 
   // Meta / Facebook
   'fbclid',  // Facebook Click ID
@@ -99,6 +101,104 @@ const EXACT_PARAMS = new Set([
 
   // Blue3 / bol.com-style affiliate click ID (seen on Dutch webshops)
   'bl3nlclid',
+
+  // --- Added from the AdGuard / ClearURLs generic lists. Each has vendor
+  // --- documentation or is removed by both lists. Entries must be lower-case.
+
+  // Google Analytics cross-domain linker (older sibling of _gl)
+  '_ga',
+
+  // HubSpot cross-domain visitor/session IDs, CTA click tracking, extra ad params
+  '__hsfp',
+  '__hssc',
+  '__hstc',
+  'hsctatracking', // sent as hsCtaTracking
+  'hsa_la',
+  'hsa_ol',
+
+  // MailerLite per-recipient newsletter IDs
+  'ml_subscriber',
+  'ml_subscriber_hash',
+
+  // Openstat / Yandex ad tracking
+  '_openstat',
+
+  // Adobe: Analytics campaign ID, Experience Cloud cross-domain IDs
+  's_cid',
+  'adobe_mc_ref',
+  'adobe_mc_sdid',
+
+  // Coremetrics (HCL / Acoustic) campaign tracking
+  'cm_cr',
+  'cm_me',
+
+  // AT Internet / Mapp campaign tracking
+  'xtor',
+  'wt_mc',
+
+  // Parse.ly-style internal campaign tracking (itm_ = internal utm_)
+  'itm_campaign',
+  'itm_content',
+  'itm_medium',
+  'itm_source',
+  'itm_term',
+
+  // Triple Whale attribution
+  'tw_medium',
+  'tw_profile_id',
+  'tw_source',
+
+  // Segmentify recommendation-click tracking
+  '_sgm_action',
+  '_sgm_campaign',
+  '_sgm_source',
+
+  // Adjust web attribution
+  'adjust_referrer',
+  'external_click_id',
+
+  // AppsFlyer attribution
+  'af_ad',
+  'af_adset',
+  'af_click_lookback',
+  'af_xp',
+  'is_retargeting',
+
+  // Affiliate networks: Commission Junction, Tradedoubler, ValueCommerce,
+  // The Affiliate Platform, BeMob, Prisjakt
+  'cjdata',
+  'cjevent',
+  'tduid',
+  'vc_lpp',
+  'btag',
+  'bemobdata',
+  'pjclid',
+
+  // Yahoo! JAPAN Ads and LINE Ads click IDs
+  '_ly_c',
+  '_ly_r',
+  'line_uid',
+  'yj_r',
+  'ldtag_cl',
+  'lt_r',
+  'srclt',
+
+  // AD EBiS (Japan) custom ad parameters, sent as ebisOther1..5
+  'ebisother1',
+  'ebisother2',
+  'ebisother3',
+  'ebisother4',
+  'ebisother5',
+
+  // Mindbox click ID
+  'mindbox-click-id',
+
+  // Russian ad-labelling token (erid), required on ad links by law
+  'erid',
+
+  // Generic campaign ID used by several ad tools. No vendor documentation;
+  // added on the strength of both community lists removing it everywhere.
+  'cmpid',
 ]);
 
 // Prefix-match rules (case-insensitive).

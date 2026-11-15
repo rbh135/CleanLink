@@ -77,7 +77,8 @@ Parameters that are kept are left exactly as the site wrote them.
 Names are matched case-insensitively.
 
 - **Campaign tags:** every `utm_*` parameter
-- **Google Ads:** `gclid`, `dclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid`
+- **Google Ads and Shopping:** `gclid`, `dclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid`, `srsltid`
+- **Google Analytics:** `_gl`, `_ga`
 - **Meta:** `fbclid`, `mibextid`
 - **Instagram:** `igshid`, `igsh`
 - **Microsoft Ads:** `msclkid`
@@ -87,7 +88,23 @@ Names are matched case-insensitively.
 - **Pinterest:** `epik`
 - **Yandex:** `yclid`
 - **Mailchimp:** `mc_cid`, `mc_eid`
-- **HubSpot:** `_hsenc`, `_hsmi`, and the `hsa_*` ad parameters (`hsa_acc`, `hsa_cam`, `hsa_grp`, `hsa_ad`, `hsa_src`, `hsa_tgt`, `hsa_kw`, `hsa_mt`, `hsa_net`, `hsa_ver`)
+- **HubSpot:** `_hsenc`, `_hsmi`, `__hsfp`, `__hssc`, `__hstc`, `hsCtaTracking`, and the `hsa_*` ad parameters (`hsa_acc`, `hsa_cam`, `hsa_grp`, `hsa_ad`, `hsa_src`, `hsa_tgt`, `hsa_kw`, `hsa_mt`, `hsa_net`, `hsa_ver`, `hsa_la`, `hsa_ol`)
+- **MailerLite:** `ml_subscriber`, `ml_subscriber_hash`
+- **Adobe:** `s_cid`, `adobe_mc_ref`, `adobe_mc_sdid`
+- **Coremetrics:** `cm_cr`, `cm_me`
+- **AT Internet / Mapp:** `xtor`, `wt_mc`
+- **Internal campaign tags:** `itm_campaign`, `itm_content`, `itm_medium`, `itm_source`, `itm_term`
+- **Triple Whale:** `tw_medium`, `tw_profile_id`, `tw_source`
+- **Segmentify:** `_sgm_action`, `_sgm_campaign`, `_sgm_source`
+- **Adjust:** `adjust_referrer`, `external_click_id`
+- **AppsFlyer:** `af_ad`, `af_adset`, `af_click_lookback`, `af_xp`, `is_retargeting`
+- **Affiliate networks:** `cjdata`, `cjevent` (Commission Junction), `tduid` (Tradedoubler), `vc_lpp` (ValueCommerce), `btag`, `bemobdata`, `pjclid` (Prisjakt)
+- **Yahoo! JAPAN and LINE Ads:** `_ly_c`, `_ly_r`, `line_uid`, `yj_r`, `ldtag_cl`, `lt_r`, `srclt`
+- **AD EBiS:** `ebisOther1` to `ebisOther5`
+- **Mindbox:** `mindbox-click-id`
+- **Openstat:** `_openstat`
+- **Russian ad-labelling token:** `erid`
+- **Generic campaign ID:** `cmpid`
 - **Marketo:** `mkt_tok`
 - **Kit (ConvertKit):** `ck_subscriber_id`
 - **Vero:** `vero_id`, `vero_conv`

@@ -106,6 +106,33 @@ test('removes gclid', () => {
   eq(clean('https://example.com/?gclid=CjwKCA'), 'https://example.com/');
 });
 
+test('removes srsltid and _gl', () => {
+  eq(
+    clean('https://shop.example/product/42?variant=red&srsltid=AfmBOoq123&_gl=1*abc*_ga*MTIz'),
+    'https://shop.example/product/42?variant=red',
+  );
+});
+
+test('removes the params adopted from the community lists (as the sites spell them)', () => {
+  const names = [
+    '_ga', '__hsfp', '__hssc', '__hstc', 'hsCtaTracking', 'hsa_la', 'hsa_ol',
+    'ml_subscriber', 'ml_subscriber_hash', '_openstat',
+    's_cid', 'adobe_mc_ref', 'adobe_mc_sdid', 'cm_cr', 'cm_me', 'xtor', 'wt_mc',
+    'itm_campaign', 'itm_content', 'itm_medium', 'itm_source', 'itm_term',
+    'tw_medium', 'tw_profile_id', 'tw_source',
+    '_sgm_action', '_sgm_campaign', '_sgm_source',
+    'adjust_referrer', 'external_click_id',
+    'af_ad', 'af_adset', 'af_click_lookback', 'af_xp', 'is_retargeting',
+    'cjdata', 'cjevent', 'tduid', 'vc_lpp', 'btag', 'bemobdata', 'pjclid',
+    '_ly_c', '_ly_r', 'line_uid', 'yj_r', 'ldtag_cl', 'lt_r', 'srclt',
+    'ebisOther1', 'ebisOther2', 'ebisOther3', 'ebisOther4', 'ebisOther5',
+    'mindbox-click-id', 'erid', 'cmpid',
+  ];
+  for (const name of names) {
+    eq(clean(`https://example.com/?keep=1&${name}=x`), 'https://example.com/?keep=1');
+  }
+});
+
 test('removes dclid', () => {
   eq(clean('https://example.com/?dclid=xyz'), 'https://example.com/');
 });
