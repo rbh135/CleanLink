@@ -48,6 +48,7 @@
     } catch { /* fall through */ }
 
     // Legacy fallback – still works in all current Chrome versions.
+    const previousFocus = document.activeElement;
     const el = document.createElement('textarea');
     el.value = text;
     el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
@@ -56,6 +57,7 @@
     el.select();
     const ok = document.execCommand('copy');
     document.body.removeChild(el);
+    previousFocus?.focus?.(); // give focus back to where the user was
     if (!ok) throw new Error('execCommand returned false');
   }
 
@@ -75,7 +77,7 @@
 
     const el = document.createElement('div');
     el.id = ID;
-    el.textContent = message;
+    el.setAttribute('role', isError ? 'alert' : 'status'); // announced by screen readers
     el.style.cssText = [
       'position:fixed',
       'bottom:24px',
@@ -93,6 +95,8 @@
     ].join(';');
 
     document.body.appendChild(el);
+    // Set the text after insertion: live regions announce changes, not initial content.
+    el.textContent = message;
 
     // Fade out after 2.5 s, then remove from DOM.
     // Store timer IDs on the element so a re-triggered toast can cancel them.

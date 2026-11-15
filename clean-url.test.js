@@ -261,6 +261,17 @@ test('removes a mix of empty and non-empty params', () => {
   );
 });
 
+test('keeps bare flags that have no "=" (they can select content)', () => {
+  const input = 'https://unpkg.com/react?module';
+  const result = cleanUrl(input);
+  assert.strictEqual(result.cleaned, input);
+  assert.strictEqual(result.changed, false);
+});
+
+test('removes only the empty copy of a repeated param', () => {
+  eq(clean('https://example.com/s?tag=&tag=news'), 'https://example.com/s?tag=news');
+});
+
 test('leaves a URL with no empty params unchanged', () => {
   const input = 'https://example.com/?q=cats&page=2';
   const result = cleanUrl(input);
@@ -460,6 +471,22 @@ test('Redbubble: removes share attribution params but preserves page and sort', 
   );
 });
 
+// -- Site rule: AutoTrader.ca ------------------------------------------------
+
+test('AutoTrader: strips search-results context params from listing pages', () => {
+  eq(
+    clean('https://www.autotrader.ca/offers/toyota-prius-5dr-hb-gas-electric-hybrid-white-cat_ma70gr201450-f529ff4a-30ee-4a7d-aef6-5cf10de5aabc?sort=standard&desc=0&position=17&source_otp=t10&source=listpage_search-results&order_bucket=unknown&boost_level=p0&applied_boost_level=p0&relevance_adjustment=organic&boosting_product=none'),
+    'https://www.autotrader.ca/offers/toyota-prius-5dr-hb-gas-electric-hybrid-white-cat_ma70gr201450-f529ff4a-30ee-4a7d-aef6-5cf10de5aabc',
+  );
+});
+
+test('AutoTrader: removes search_id on search pages but keeps filters and sort', () => {
+  eq(
+    clean('https://www.autotrader.ca/cars/toyota/highlander/pr_16000?offer=N%2CU&cy=CA&damaged_listing=exclude&desc=0&lat=49.24966&lon=-123.11934&sort=standard&ustate=N%2CU&atype=C&mcat=ma70gr201461&search_id=26hb3lp8r1s&size=20'),
+    'https://www.autotrader.ca/cars/toyota/highlander/pr_16000?offer=N%2CU&cy=CA&damaged_listing=exclude&desc=0&lat=49.24966&lon=-123.11934&sort=standard&ustate=N%2CU&atype=C&mcat=ma70gr201461&size=20',
+  );
+});
+
 // -- Site rule: Google Search ------------------------------------------------
 
 test('Google Search: strips known tracking/session params but preserves q=', () => {
@@ -472,7 +499,7 @@ test('Google Search: strips known tracking/session params but preserves q=', () 
 test('Google Search: preserves content-defining search controls', () => {
   eq(
     clean('https://www.google.com/search?q=clean+link&tbm=vid&tbs=qdr:w&start=20&hl=en&gl=us&num=20&sourceid=chrome'),
-    'https://www.google.com/search?q=clean+link&tbm=vid&tbs=qdr%3Aw&start=20&hl=en&gl=us&num=20',
+    'https://www.google.com/search?q=clean+link&tbm=vid&tbs=qdr:w&start=20&hl=en&gl=us&num=20',
   );
 });
 
@@ -596,6 +623,51 @@ test('AliExpress: rule applies to all regional subdomains', () => {
   eq(
     clean('https://de.aliexpress.com/item/999.html?spm=tracking&pvid=session'),
     'https://de.aliexpress.com/item/999.html',
+  );
+});
+
+// -- Kept params stay byte-for-byte ------------------------------------------
+
+test('does not re-encode kept params when a tracker is removed', () => {
+  eq(
+    clean('https://example.com/?q=a%20b&x=1~2&utm_source=x'),
+    'https://example.com/?q=a%20b&x=1~2',
+  );
+});
+
+test('site rule with nothing to remove leaves the URL untouched (changed=false)', () => {
+  const input = 'https://www.youtube.com/results?search_query=a%20b';
+  const result = cleanUrl(input);
+  assert.strictEqual(result.cleaned, input);
+  assert.strictEqual(result.changed, false);
+});
+
+test('Google Search: removing #ebo keeps the rest of the hash as written', () => {
+  eq(clean('https://www.google.com/search?q=x#ebo=0&a=b:c'), 'https://www.google.com/search?q=x#a=b:c');
+});
+
+// -- Host matching -----------------------------------------------------------
+
+test('look-alike hosts are not treated as Amazon or Google', () => {
+  for (const input of [
+    'https://not-amazon.com/post?ref=main&tag=news',
+    'https://google.example.com/search?q=x&client=y',
+  ]) {
+    eq(clean(input), input);
+  }
+});
+
+test('YouTube: removes si= on m. and music. hosts', () => {
+  eq(clean('https://m.youtube.com/watch?v=abc&si=TRACK'), 'https://m.youtube.com/watch?v=abc');
+  eq(clean('https://music.youtube.com/watch?v=abc&si=TRACK'), 'https://music.youtube.com/watch?v=abc');
+});
+
+test('Amazon: covers more stores, trailing-slash ref segment and /gp/product/', () => {
+  eq(clean('https://www.amazon.com.tr/dp/B08XYZ1234?tag=x'), 'https://www.amazon.com.tr/dp/B08XYZ1234');
+  eq(clean('https://www.amazon.com/dp/B08XYZ1234/ref=sr_1_1/?th=1'), 'https://www.amazon.com/dp/B08XYZ1234?th=1');
+  eq(
+    clean('https://www.amazon.com/gp/product/B08XYZ1234?crid=1&keywords=k&th=1'),
+    'https://www.amazon.com/gp/product/B08XYZ1234?th=1',
   );
 });
 

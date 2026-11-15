@@ -121,10 +121,19 @@ const COMPANION_PARAMS = [
   { prefix: 'etrias_', params: ['p'] },
 ];
 
+// Google country hosts: google.com, google.de, google.co.uk, google.com.au …
+// Anchored so look-alikes such as google.example.com do not match.
+const GOOGLE_HOST = /(?:^|\.)google\.(?:com?\.)?[a-z]{2,3}$/;
+
 // Site-specific cleanup rules.
 //
 // Apply targeted removals for well-known domains after generic cleaning.
-// Each rule is: { test(url: URL): boolean, clean(url: URL): URL }
+// Each rule is:
+//   {
+//     test(url: URL): boolean,
+//     params?: string[],        // exact (case-sensitive) names to remove
+//     clean?(url: URL): void,   // anything a plain list cannot express
+//   }
 //
 // Rules here should be conservative: only remove params that are
 // unambiguously decorative/tracking on that specific domain.
@@ -135,39 +144,37 @@ const SITE_RULES = [
     // Amazon product and search pages append affiliate tags and session noise
     // that are not part of the product identity. The ASIN in the URL path is
     // the content identifier; none of the params below affect which page loads.
-    test: (url) => /\bamazon\.(com|co\.uk|de|fr|ca|jp|com\.au|com\.br|in|it|es|nl|se|sg|ae|com\.mx)$/.test(url.hostname),
+    test: (url) => /(?:^|\.)amazon\.(com|co\.uk|de|fr|ca|jp|co\.jp|com\.au|com\.br|in|it|es|nl|se|sg|ae|com\.mx|com\.tr|pl|sa|eg|com\.be|ie|co\.za|cn)$/.test(url.hostname),
+    params: [
+      'ats', // opaque personalization blob; can include customer/account hints
+      '_encoding', // legacy page encoding marker, not content-defining
+      'content-id', // merchandising/placement token from recommendation slots
+      'ie', // legacy input-encoding marker
+      'tag',       // affiliate / associate tag
+      'linkCode',  // affiliate link code
+      'linkId',    // affiliate link ID
+      'ref',       // referral source (sr_1_1 = search result rank, etc.)
+      'ref_',      // share-link variant of ref (cm_sw_r_cp_ud_ct_… tokens)
+      'psc',       // share-link session marker; not present on normal navigation
+      'pd_rd_r',   // personalisation session token
+      'pd_rd_w',   // personalisation session token
+      'pd_rd_wg',  // personalisation session token
+      'pf_rd_p',   // page feature token
+      'pf_rd_r',   // page feature token
+      'sr',        // search result rank position (tracking)
+      'qid',       // query session ID (changes per search, not content)
+      'ufe',       // app deep-link/experiment attribution token (app_do:...)
+      'xpid',      // experiment/placement session ID
+    ],
     clean: (url) => {
-      url.pathname = url.pathname.replace(/\/ref=[^/?#]+$/, '');
-
-      const amazonSessionParams = [
-        'ats', // opaque personalization blob; can include customer/account hints
-        '_encoding', // legacy page encoding marker, not content-defining
-        'content-id', // merchandising/placement token from recommendation slots
-        'ie', // legacy input-encoding marker
-        'tag',       // affiliate / associate tag
-        'linkCode',  // affiliate link code
-        'linkId',    // affiliate link ID
-        'ref',       // referral source (sr_1_1 = search result rank, etc.)
-        'ref_',      // share-link variant of ref (cm_sw_r_cp_ud_ct_… tokens)
-        'psc',       // share-link session marker; not present on normal navigation
-        'pd_rd_r',   // personalisation session token
-        'pd_rd_w',   // personalisation session token
-        'pd_rd_wg',  // personalisation session token
-        'pf_rd_p',   // page feature token
-        'pf_rd_r',   // page feature token
-        'sr',        // search result rank position (tracking)
-        'qid',       // query session ID (changes per search, not content)
-        'ufe',       // app deep-link/experiment attribution token (app_do:...)
-        'xpid',      // experiment/placement session ID
-      ];
-      for (const key of amazonSessionParams) {
-        url.searchParams.delete(key);
+      if (/\/ref=[^/?#]+\/?$/.test(url.pathname)) {
+        url.pathname = url.pathname.replace(/\/ref=[^/?#]+\/?$/, '');
       }
 
       // On Amazon product pages, these query params carry search/session state
       // rather than product identity. Preserve variant selectors like th=.
-      if (/\/(?:[^/]+\/)?dp\/[A-Z0-9]{10}(?:\/|$)/i.test(url.pathname)) {
-        const amazonProductTrackingParams = [
+      if (/\/(?:dp|gp\/product)\/[A-Z0-9]{10}(?:\/|$)/i.test(url.pathname)) {
+        dropParams(url, [
           'crid',     // search request/campaign bucket ID
           'dib',      // opaque merchandising/session blob
           'dib_tag',  // merchandising surface tag
@@ -175,12 +182,8 @@ const SITE_RULES = [
           'refinements', // search filters carried over from the results page
           'rnid',     // refinement node ID of the last-used search filter
           'sprefix',  // typed-prefix telemetry
-        ];
-        for (const key of amazonProductTrackingParams) {
-          url.searchParams.delete(key);
-        }
+        ]);
       }
-      return url;
     },
   },
 
@@ -191,28 +194,22 @@ const SITE_RULES = [
     // and curPageLogUid are
     // all session/placement/A-B-test noise with no content-defining purpose.
     test: (url) => /(?:^|\.)aliexpress\.com$/.test(url.hostname),
-    clean: (url) => {
-      const aliexpressTrackingParams = [
-        'spm',          // session/placement tracking path
-        'gps-id',       // placement ID
-        'scm',          // scene tracking token
-        'scm_id',       // scene ID
-        'scm-url',      // scene URL token
-        'pvid',         // page view ID
-        '_t',           // tracking blob
-        'tpp_buckets',  // A/B test bucket IDs
-        'pdp_ext_f',    // page-detail extra fields (fromPage, sceneId, …)
-        'pdp_npi',      // pricing display data redundant with page content
-        'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
-        'algo_pvid',    // recommendation-algorithm page view ID
-        'algo_exp_id',  // recommendation-algorithm experiment ID
-        'curPageLogUid', // logging ID of the page the link was clicked from
-      ];
-      for (const key of aliexpressTrackingParams) {
-        url.searchParams.delete(key);
-      }
-      return url;
-    },
+    params: [
+      'spm',          // session/placement tracking path
+      'gps-id',       // placement ID
+      'scm',          // scene tracking token
+      'scm_id',       // scene ID
+      'scm-url',      // scene URL token
+      'pvid',         // page view ID
+      '_t',           // tracking blob
+      'tpp_buckets',  // A/B test bucket IDs
+      'pdp_ext_f',    // page-detail extra fields (fromPage, sceneId, …)
+      'pdp_npi',      // pricing display data redundant with page content
+      'utparam-url',  // URL-level tracking (distinct from utm_ prefix)
+      'algo_pvid',    // recommendation-algorithm page view ID
+      'algo_exp_id',  // recommendation-algorithm experiment ID
+      'curPageLogUid', // logging ID of the page the link was clicked from
+    ],
   },
 
   {
@@ -221,16 +218,7 @@ const SITE_RULES = [
     // and category_id do not change which project page loads.
     test: (url) => /(?:^|\.)kickstarter\.com$/.test(url.hostname)
                 && /^\/projects\/[^/]+\/[^/]+\/?$/.test(url.pathname),
-    clean: (url) => {
-      const kickstarterTrackingParams = [
-        'ref',
-        'category_id',
-      ];
-      for (const key of kickstarterTrackingParams) {
-        url.searchParams.delete(key);
-      }
-      return url;
-    },
+    params: ['ref', 'category_id'],
   },
 
   {
@@ -240,14 +228,10 @@ const SITE_RULES = [
     // entirely by the path.
     test: (url) => /(?:^|\.)humblebundle\.com$/.test(url.hostname),
     clean: (url) => {
-      const humbleTrackingParams = ['mcid', 'linkid'];
-      for (const key of [...url.searchParams.keys()]) {
+      dropParams(url, (key) => {
         const lower = key.toLowerCase();
-        if (lower.startsWith('hmb_') || humbleTrackingParams.includes(lower)) {
-          url.searchParams.delete(key);
-        }
-      }
-      return url;
+        return lower.startsWith('hmb_') || lower === 'mcid' || lower === 'linkid';
+      });
     },
   },
 
@@ -255,15 +239,31 @@ const SITE_RULES = [
     // Redbubble artist/shop pages use ref/ref_site for share attribution.
     // Preserve pagination/sort controls and drop only the share-tracking keys.
     test: (url) => /(?:^|\.)redbubble\.com$/.test(url.hostname),
+    params: ['ref', 'ref_site'],
+  },
+
+  {
+    // AutoTrader.ca: search_id is a per-search session ID on every page.
+    // Listing pages (/offers/{slug}-{id}) identify the vehicle entirely in
+    // the path; the other params record the search-results context the
+    // listing was clicked from (sort, rank, ad boosting). Those are scoped
+    // to /offers/ so sort/desc and filters still work on search pages.
+    test: (url) => /(?:^|\.)autotrader\.ca$/.test(url.hostname),
+    params: ['search_id'],
     clean: (url) => {
-      const redbubbleTrackingParams = [
-        'ref',
-        'ref_site',
-      ];
-      for (const key of redbubbleTrackingParams) {
-        url.searchParams.delete(key);
-      }
-      return url;
+      if (!url.pathname.startsWith('/offers/')) return;
+      dropParams(url, [
+        'sort',
+        'desc',
+        'position',
+        'source',
+        'source_otp',
+        'order_bucket',
+        'boost_level',
+        'applied_boost_level',
+        'relevance_adjustment',
+        'boosting_product',
+      ]);
     },
   },
 
@@ -271,18 +271,12 @@ const SITE_RULES = [
     // Google Maps place/share URLs often append entry/g_ep attribution
     // markers. They do not identify the place or map view, so remove only
     // those keys and leave the complex path/data payload untouched.
-    test: (url) => /(?:^|\.)google\.[a-z.]+$/.test(url.hostname)
+    test: (url) => GOOGLE_HOST.test(url.hostname)
                 && url.pathname.startsWith('/maps'),
-    clean: (url) => {
-      const googleMapsTrackingParams = [
-        'entry', // surface/share entry marker (e.g. ttu)
-        'g_ep',  // opaque experiment/entry-point token
-      ];
-      for (const key of googleMapsTrackingParams) {
-        url.searchParams.delete(key);
-      }
-      return url;
-    },
+    params: [
+      'entry', // surface/share entry marker (e.g. ttu)
+      'g_ep',  // opaque experiment/entry-point token
+    ],
   },
 
   {
@@ -290,59 +284,43 @@ const SITE_RULES = [
     // hl, gl, num, start, etc.) and strip session/telemetry noise.
     // Scope is intentionally narrow (Google host + /search path) so other
     // Google products are untouched unless we add explicit rules later.
-    test: (url) => /(?:^|\.)google\.[a-z.]+$/.test(url.hostname)
+    test: (url) => GOOGLE_HOST.test(url.hostname)
                 && url.pathname === '/search',
+    params: [
+      'client',   // requesting client/app fingerprint
+      'sxsrf',    // session/XSRF token
+      'ei',       // request/session event identifier
+      'gs_lp',    // query refinement/session blob
+      'sca_esv',  // experiment/session variant token
+      'oq',       // original query (typing/correction telemetry)
+      'sclient',  // search client surface identifier
+      'sourceid', // traffic source marker (e.g. "chrome")
+      'ved',      // click/context telemetry token
+      'uact',     // user action type
+      'iflsig',   // integrity/session signature
+    ],
     clean: (url) => {
-      const googleSearchTrackingParams = [
-        'client',   // requesting client/app fingerprint
-        'sxsrf',    // session/XSRF token
-        'ei',       // request/session event identifier
-        'gs_lp',    // query refinement/session blob
-        'sca_esv',  // experiment/session variant token
-        'oq',       // original query (typing/correction telemetry)
-        'sclient',  // search client surface identifier
-        'sourceid', // traffic source marker (e.g. "chrome")
-        'ved',      // click/context telemetry token
-        'uact',     // user action type
-        'iflsig',   // integrity/session signature
-      ];
-      for (const key of googleSearchTrackingParams) {
-        url.searchParams.delete(key);
-      }
-
       // Google occasionally appends query-like hash params such as #ebo=0.
       // Strip only ebo from the fragment while preserving any other hash keys.
-      if (url.hash.startsWith('#') && url.hash.length > 1) {
-        const hashParams = new URLSearchParams(url.hash.slice(1));
-        if (hashParams.has('ebo')) {
-          hashParams.delete('ebo');
-          const nextHash = hashParams.toString();
-          url.hash = nextHash ? `#${nextHash}` : '';
-        }
-      }
-      return url;
+      const hash = url.hash.slice(1);
+      const next = stripQuery(hash, (key) => key === 'ebo');
+      if (next !== hash) url.hash = next;
     },
   },
 
   {
     // YouTube: preserve v= (video), t= (timestamp), list= (playlist), index=.
     // Strip si= (share instance ID) and feature= (traffic source label).
-    test: (url) => url.hostname === 'www.youtube.com'
-                || url.hostname === 'youtube.com'
+    // Covers www., m. and music. hosts.
+    test: (url) => /(?:^|\.)youtube\.com$/.test(url.hostname)
                 || url.hostname === 'youtu.be',
-    clean: (url) => {
-      const youtubeTrackingParams = [
-        'si',      // share instance ID (added by the Share button)
-        'feature', // traffic source label (e.g. "shared", "youtu.be")
-        'app',     // app variant hint (unused by the page itself)
-        'src_vid', // source video for autoplayed related videos
-        'pp',      // player parameters blob (autoplay / shorts tracking)
-      ];
-      for (const key of youtubeTrackingParams) {
-        url.searchParams.delete(key);
-      }
-      return url;
-    },
+    params: [
+      'si',      // share instance ID (added by the Share button)
+      'feature', // traffic source label (e.g. "shared", "youtu.be")
+      'app',     // app variant hint (unused by the page itself)
+      'src_vid', // source video for autoplayed related videos
+      'pp',      // player parameters blob (autoplay / shorts tracking)
+    ],
   },
 ];
 
@@ -360,53 +338,59 @@ function isSupportedScheme(url) {
 }
 
 /**
- * Remove all tracking parameters from `url` in-place.
- * Uses case-insensitive comparison for both exact and prefix rules.
+ * Drop params from a raw query string (no leading `?`).
+ * `shouldDrop(key, part)` gets the decoded name and the raw `name=value` text.
+ *
+ * Works on the raw text on purpose: searchParams.delete() re-encodes every
+ * param it keeps (%20 -> +, ~ -> %7E), which rewrites parts of the link we
+ * promised not to touch.
  */
-function removeTrackingParams(url) {
-  const keysToDelete = [];
-
-  for (const key of url.searchParams.keys()) {
-    const lower = key.toLowerCase();
-    if (EXACT_PARAMS.has(lower) || PREFIX_PARAMS.some((prefix) => lower.startsWith(prefix))) {
-      keysToDelete.push(key);
-    }
-  }
-
-  for (const { prefix, params } of COMPANION_PARAMS) {
-    if (keysToDelete.some((key) => key.toLowerCase().startsWith(prefix))) {
-      keysToDelete.push(...params);
-    }
-  }
-
-  // Delete in a second pass to avoid mutating the iterator mid-loop.
-  for (const key of keysToDelete) {
-    url.searchParams.delete(key);
-  }
-
-  return url;
+function stripQuery(query, shouldDrop) {
+  return query.split('&').filter((part) => {
+    const key = new URLSearchParams(part).keys().next().value;
+    return key === undefined || !shouldDrop(key, part);
+  }).join('&');
 }
 
-/** Remove parameters whose value is an empty string (e.g. `CF=`, `CFID=`). */
-function removeEmptyParams(url) {
-  const keysToDelete = [];
-  for (const [key, value] of url.searchParams.entries()) {
-    if (value === '') keysToDelete.push(key);
-  }
-  for (const key of keysToDelete) {
-    url.searchParams.delete(key);
-  }
-  return url;
+/**
+ * Drop query params from `url` in-place. `match` is a list of exact
+ * (case-sensitive) names or a `shouldDrop(key, part)` function.
+ */
+function dropParams(url, match) {
+  const shouldDrop = Array.isArray(match) ? (key) => match.includes(key) : match;
+  const query = url.search.slice(1);
+  const next = stripQuery(query, shouldDrop);
+  if (next !== query) url.search = next;
+}
+
+/**
+ * Remove generic tracking parameters from `url` in-place.
+ * Uses case-insensitive comparison for both exact and prefix rules.
+ * Also drops `name=` params with an explicit empty value (e.g. `CF=&CFID=`).
+ * A bare flag with no `=` (e.g. `?module`) is kept: it can select content.
+ */
+function removeTrackingParams(url) {
+  const lowerKeys = [...url.searchParams.keys()].map((key) => key.toLowerCase());
+  const companions = COMPANION_PARAMS
+    .filter(({ prefix }) => lowerKeys.some((key) => key.startsWith(prefix)))
+    .flatMap(({ params }) => params);
+
+  dropParams(url, (key, part) => {
+    const lower = key.toLowerCase();
+    return EXACT_PARAMS.has(lower)
+        || PREFIX_PARAMS.some((prefix) => lower.startsWith(prefix))
+        || companions.includes(key)
+        || /^[^=]+=$/.test(part);
+  });
 }
 
 /** Apply every site rule whose test() matches the URL. */
 function applySiteRules(url) {
   for (const rule of SITE_RULES) {
-    if (rule.test(url)) {
-      url = rule.clean(url);
-    }
+    if (!rule.test(url)) continue;
+    if (rule.params) dropParams(url, rule.params);
+    if (rule.clean) rule.clean(url);
   }
-  return url;
 }
 
 // ---------------------------------------------------------------------------
@@ -442,13 +426,13 @@ function cleanUrl(rawUrl) {
     };
   }
 
-  url = removeTrackingParams(url);
-  url = removeEmptyParams(url);
-  url = applySiteRules(url);
+  const before = url.href;
+  removeTrackingParams(url);
+  applySiteRules(url);
 
-  const cleaned = url.toString();
+  const cleaned = url.href;
   // `changed` lets the UI show a distinct message when nothing was stripped.
-  return { ok: true, cleaned, changed: cleaned !== rawUrl };
+  return { ok: true, cleaned, changed: cleaned !== before };
 }
 
 // ---------------------------------------------------------------------------

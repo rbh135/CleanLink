@@ -12,7 +12,7 @@ When you click the toolbar icon, Clean Link:
 
 1. Reads the URL of the current active tab.
 2. Strips known tracking and analytics query parameters.
-3. Applies a small set of site-specific rules (Amazon, AliExpress, YouTube, Google Search).
+3. Applies a small set of site-specific rules (Amazon, AliExpress, YouTube, Google Search and Maps, Kickstarter, Humble Bundle, Redbubble, AutoTrader.ca).
 4. Copies the result to your clipboard.
 5. Shows a brief toast in the corner of the page: green if tracking was removed or the link was already clean, red on error. The toast dismisses itself after 2.5 seconds.
 
@@ -71,30 +71,44 @@ When you click the toolbar icon, Clean Link:
 | Parameter(s)                        | Source                     | Match type |
 | ----------------------------------- | -------------------------- | ---------- |
 | `utm_*` (any variant)               | Google Analytics / generic | prefix     |
-| `gclid`, `dclid`, `gbraid`, `wbraid`| Google Ads click IDs       | exact      |
-| `fbclid`                            | Meta / Facebook            | exact      |
+| `gclid`, `dclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid` | Google Ads | exact |
+| `fbclid`, `mibextid`                | Meta / Facebook            | exact      |
 | `mc_cid`, `mc_eid`                  | Mailchimp                  | exact      |
-| `_hsenc`, `_hsmi`                   | HubSpot                    | exact      |
+| `wickedid`                          | Newsletter attribution     | exact      |
+| `_hsenc`, `_hsmi`                   | HubSpot email              | exact      |
+| `hsa_acc`, `hsa_cam`, `hsa_grp`, `hsa_ad`, `hsa_src`, `hsa_tgt`, `hsa_kw`, `hsa_mt`, `hsa_net`, `hsa_ver` | HubSpot ads | exact |
+| `dm_cam`, `dm_grp`, `dm_ad`, `dm_kw`, `dm_net` | Ad campaign attribution | exact |
 | `mkt_tok`                           | Marketo                    | exact      |
 | `ck_subscriber_id`                  | Kit (ConvertKit)           | exact      |
-| `igshid`                            | Instagram                  | exact      |
+| `igshid`, `igsh`                    | Instagram                  | exact      |
 | `twclid`                            | Twitter / X                | exact      |
 | `yclid`                             | Yandex                     | exact      |
+| `msclkid`                           | Microsoft Ads              | exact      |
+| `ttclid`                            | TikTok Ads                 | exact      |
+| `rb_clickid`                        | Reddit Ads                 | exact      |
+| `epik`                              | Pinterest                  | exact      |
 | `bl3nlclid`                         | Dutch affiliate click ID   | exact      |
 | `etrias_*` (+ `p` alongside it)     | Etrias                     | prefix     |
-| `vero_id`                           | Vero                       | exact      |
+| `vero_id`, `vero_conv`              | Vero                       | exact      |
 | `oly_anon_id`, `oly_enc_id`         | Omnisend                   | exact      |
+| any `name=` with an empty value     | leftover form fields       | —          |
 
 The `utm_` prefix rule catches any current or future `utm_*` variant without requiring an explicit entry per parameter.
+
+Names are matched case-insensitively. A bare flag with no `=` (e.g. `?module`) is kept, because it can select content. Parameters that are kept are left byte-for-byte as the site wrote them.
 
 ### Site-specific rules
 
 | Site    | Params removed                                                         | Params kept                    |
 | ------- | ---------------------------------------------------------------------- | ------------------------------ |
-| YouTube | `si`, `feature`, `app`, `src_vid`, `pp`                                | `v`, `t`, `list`, `index`, ... |
-| Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ufe`, `xpid`; on `/dp/` pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix` | `th`, `k`, `i`, ...            |
+| YouTube (incl. `m.`, `music.`, `youtu.be`) | `si`, `feature`, `app`, `src_vid`, `pp` | `v`, `t`, `list`, `index`, ... |
+| Amazon  | path `/ref=...`, `ats`, `_encoding`, `content-id`, `ie`, `tag`, `linkCode`, `linkId`, `ref`, `ref_`, `psc`, `pd_rd_*`, `pf_rd_*`, `sr`, `qid`, `ufe`, `xpid`; on `/dp/` and `/gp/product/` pages also `crid`, `dib`, `dib_tag`, `keywords`, `refinements`, `rnid`, `sprefix` | `th`, `k`, `i`, ...            |
 | AliExpress | `spm`, `gps-id`, `scm*`, `pvid`, `_t`, `tpp_buckets`, `pdp_*`, `utparam-url`, `algo_pvid`, `algo_exp_id`, `curPageLogUid` | path item ID, content params |
 | Redbubble | `ref`, `ref_site`                                                    | `page`, `sortOrder`, ...       |
+| Kickstarter (project pages) | `ref`, `category_id`                               | everything else                |
+| Humble Bundle | `hmb_*`, `mcID`, `linkID`                                        | everything else                |
+| Google Maps (`/maps`) | `entry`, `g_ep`                                          | path, everything else          |
+| AutoTrader.ca | `search_id`; on `/offers/` pages also `sort`, `desc`, `position`, `source`, `source_otp`, `order_bucket`, `boost_level`, `applied_boost_level`, `relevance_adjustment`, `boosting_product` | search filters, listing ID |
 | Google Search (`/search`) | `client`, `sxsrf`, `ei`, `gs_lp`, `sca_esv`, `oq`, `sclient`, `sourceid`, `ved`, `uact`, `iflsig`, hash `ebo` | `q`, `tbm`, `tbs`, `hl`, `gl`, `num`, `start`, ... |
 
 ---
@@ -105,7 +119,7 @@ Many query parameters serve dual purposes or have ambiguous names. Clean Link on
 
 **Parameters we deliberately do not remove globally:**
 
-- `ref` – used by GitHub for branch names, by many sites for pagination refs. Only removed on Amazon where its tracking purpose on product pages is well-documented.
+- `ref` – used by GitHub for branch names, by many sites for pagination refs. Only removed on Amazon, Kickstarter project pages and Redbubble, where its tracking purpose is well-documented.
 - `source` – often describes internal navigation (e.g. search → article).
 - `id`, `pid`, `cid`, `sid` – almost always content or session identifiers.
 - `page`, `sort`, `filter`, `variant`, `color`, `size` – UI state, not tracking.
@@ -208,7 +222,7 @@ Exit code is `0` on full pass, `1` on any failure.
 
 ## Current limitations
 
-- **`chrome://`, `about:`, and other restricted pages are silently skipped.** Chrome does not allow script injection into these pages, so the extension does nothing when clicked on them.
+- **`chrome://`, `about:`, and other restricted pages cannot be cleaned.** Chrome does not allow script injection into these pages, so nothing is copied; the toolbar icon shows a `✗` badge for two seconds instead of a toast.
 - **`file://` pages are not cleaned.** By default, script injection is blocked. If a user manually enables "Allow access to file URLs", the cleaner still rejects `file://` as an unsupported scheme.
 - **Fragment-only tracking** is mostly not removed. `#ebo=0` is stripped on Google Search, but other hash trackers (e.g. `#xtor=RSS-...`) are currently preserved.
 - **URL shorteners** (bit.ly, t.co, etc.) are not expanded. Following a redirect requires a network request, which violates the no-network-requests guarantee.
@@ -218,20 +232,19 @@ Exit code is `0` on full pass, `1` on any failure.
 
 ## Adding domain-specific rules
 
-The `SITE_RULES` array in `clean-url.js` is the right place for targeted additions. Each rule is a plain object with two functions:
+The `SITE_RULES` array in `clean-url.js` is the right place for targeted additions. Each rule is a plain object:
 
 ```js
 {
   // Return true if this rule applies to the URL.
   test: (url) => url.hostname === 'open.spotify.com',
 
-  // Remove tracking params; return the modified URL object.
-  clean: (url) => {
-    url.searchParams.delete('si'); // Spotify share instance ID
-    return url;
-  },
+  // Exact (case-sensitive) parameter names to remove.
+  params: ['si'], // Spotify share instance ID
 }
 ```
+
+For anything a plain list cannot express (path cleanup, rules that depend on the path), add an optional `clean(url)` function that edits the URL in place. Use the `dropParams(url, [...])` helper there rather than `url.searchParams.delete()`, which re-encodes every parameter it keeps.
 
 Rules here only apply to URLs that match `test()`, so they carry no risk of breaking unrelated sites. Add a test case to `clean-url.test.js` for every rule you add.
 

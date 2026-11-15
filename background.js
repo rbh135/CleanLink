@@ -5,7 +5,7 @@
  * the active tab in a single call so they share the same isolated-world
  * globalThis. All URL cleaning, clipboard writing, and toast display happen
  * inside those injected scripts; nothing sensitive passes through this worker.
- * 
+ * On pages Chrome will not let us inject into, the icon briefly shows a badge.
  */
 
 chrome.action.onClicked.addListener(async (tab) => {
@@ -21,7 +21,11 @@ chrome.action.onClicked.addListener(async (tab) => {
     });
   } catch {
     // executeScript is blocked on chrome://, file://, about:, and other
-    // restricted pages. There is no page surface to display feedback on,
-    // so we silently do nothing rather than show a confusing browser alert.
+    // restricted pages. There is no page surface to show a toast on, so flag
+    // the failure on the icon for 2 s; otherwise the user pastes a stale
+    // clipboard without noticing. The tab may close meanwhile, hence the catches.
+    const setBadge = (text) => chrome.action.setBadgeText({ text, tabId: tab.id }).catch(() => {});
+    setBadge('✗');
+    setTimeout(() => setBadge(''), 2000);
   }
 });
